@@ -1,0 +1,16 @@
+{
+  "name": "mx6000-control",
+  "version": "1.0.0",
+  "description": "Web control interface for Novastar MX6000 LED video processor",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.1",
+    "jszip": "^3.10.1"
+  },
+  "author": "Cameron Aanestad",
+  "license": "MIT"
+}

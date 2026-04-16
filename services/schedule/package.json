@@ -1,0 +1,9 @@
+{
+  "name": "hub-schedule",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.2",
+    "csv-parse": "^5.5.0"
+  }
+}

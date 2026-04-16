@@ -1,0 +1,10 @@
+# EventTemple Scraper Schedule
+# Runs twice daily at 01:00 and 13:00 Oslo time
+0 1 * * * /app/run_scraper.sh
+0 13 * * * /app/run_scraper.sh
+
+# Session Heartbeat
+# Visits EventTemple daily at 3 AM to keep session alive
+0 3 * * * cd /app && python3 session_heartbeat.py >> /app/logs/heartbeat.log 2>&1
+
+# Empty line required at end of crontab

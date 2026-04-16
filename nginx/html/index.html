@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Tech</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f; --bg-card: #12121a;
+            --border: #2a2a38; --text: #f0f0f5; --text-dim: #8888a0;
+            --accent: #4a9eff; --accent-glow: rgba(74, 158, 255, 0.15);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-dark); color: var(--text); min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        header {
+            text-align: center; padding: 80px 24px 60px;
+            background: linear-gradient(180deg, #101018 0%, var(--bg-dark) 100%);
+        }
+        .hotel-name {
+            font-size: 11px; letter-spacing: 6px; color: var(--text-dim);
+            text-transform: uppercase; margin-bottom: 16px; font-weight: 500;
+        }
+        h1 { font-size: 56px; font-weight: 200; letter-spacing: -1px; margin-bottom: 12px; }
+        h1 span {
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), #7dd3fc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        main { flex: 1; padding: 20px 24px 60px; max-width: 1100px; margin: 0 auto; width: 100%; }
+        .tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        @media (max-width: 900px) { .tools-grid { grid-template-columns: 1fr; } }
+        .tool-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 28px; text-decoration: none; color: inherit; transition: all 0.25s ease;
+            display: flex; align-items: center; gap: 20px;
+        }
+        .tool-card:hover {
+            transform: translateY(-4px); border-color: var(--accent);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.4), 0 0 40px var(--accent-glow);
+        }
+        .tool-icon {
+            width: 52px; height: 52px; background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .tool-icon svg { width: 24px; height: 24px; stroke: var(--accent); stroke-width: 1.5; fill: none; }
+        .tool-info h2 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+        .tool-info p { color: var(--text-dim); font-size: 13px; }
+        .section-label {
+            font-size: 11px; letter-spacing: 4px; color: var(--text-dim);
+            text-transform: uppercase; margin: 36px 0 14px; font-weight: 600;
+        }
+        .section-label:first-child { margin-top: 0; }
+        footer {
+            text-align: center; padding: 32px 24px; color: var(--text-dim); font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+        footer a { color: var(--text-dim); text-decoration: none; font-size: 11px; opacity: 0.4; }
+        footer a:hover { color: var(--accent); opacity: 1; }
+        @media (max-width: 600px) {
+            header { padding: 50px 20px 40px; } h1 { font-size: 36px; }
+            .tools-grid { gap: 12px; } .tool-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="hotel-name">Clarion Hotel The Hub</div>
+        <h1>Tech <span>Tools</span></h1>
+    </header>
+
+    <main>
+        <div class="section-label">Control</div>
+        <div class="tools-grid">
+            <a target="_blank" href="/lighting/" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 3a6 6 0 0 1 6 6c0 3-2 5.5-3 7h-6c-1-1.5-3-4-3-7a6 6 0 0 1 6-6z"/></svg>
+                </div>
+                <div class="tool-info">
+                    <h2>Jernbanetorget Lighting Controller</h2>
+                    <p>Controller for Jernbanetorget house lights</p>
+                </div>
+            </a>
+
+            <a target="_blank" href="/mx6000/" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+                </div>
+                <div class="tool-info">
+                    <h2>LED Wall Controller</h2>
+                    <p>Novastar MX6000 control and backup</p>
+                </div>
+            </a>
+
+            <a target="_blank" href="http://chandelier.tech.thehub/" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2v4"/><path d="M5 8h14l-2 4H7z"/><path d="M9 12l-2 7"/><path d="M12 12v8"/><path d="M15 12l2 7"/><circle cx="7" cy="20" r="1.5"/><circle cx="12" cy="21" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>
+                </div>
+                <div class="tool-info">
+                    <h2>Chandelier Control</h2>
+                    <p>Beckhoff ADS bridge — enable, DMX, jog</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="section-label">Reference</div>
+        <div class="tools-grid">
+            <a target="_blank" href="/tools/lighting-reference.html" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="tool-info">
+                    <h2>Jernbanetorget Lighting Reference</h2>
+                    <p>Reference guide and patch list</p>
+                </div>
+            </a>
+
+            <a target="_blank" href="/tools/wireless.html" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </div>
+                <div class="tool-info">
+                    <h2>Wireless Frequencies</h2>
+                    <p>The Hub's wireless frequency list</p>
+                </div>
+            </a>
+
+            <a target="_blank" href="/docs/" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <div class="tool-info">
+                    <h2>Documentation</h2>
+                    <p>System and equipment documentation</p>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <a target="_blank" href="/admin.html">Internal Tools</a>
+    </footer>
+</body>
+</html>

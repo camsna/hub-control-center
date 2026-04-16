@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direct Control — POC</title>
+<style>
+:root {
+  --bg: #1a1a1e; --panel: #242428; --card: #2d2d32; --hover: #38383f;
+  --border: #3a3a42; --text: #e8e8ec; --dim: #8e8e96;
+  --accent: #4a9eff; --on: #34c759; --off: #ff3b30; --warn: #ff9500;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh; padding: 1rem; }
+
+.container { max-width: 700px; margin: 0 auto; }
+h1 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.25rem; }
+.sub { color: var(--dim); font-size: 0.75rem; margin-bottom: 1rem; }
+
+.conn { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.75rem;
+  background:var(--panel); border-radius:8px; margin-bottom:1rem; border:1px solid var(--border); font-size:0.8rem; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--off); }
+.dot.ok { background:var(--on); }
+.dot.wait { background:var(--warn); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.conn .lbl { flex:1; color:var(--dim); }
+.conn button { padding:0.3rem 0.6rem; border-radius:6px; border:1px solid var(--border);
+  background:var(--card); color:var(--text); cursor:pointer; font-size:0.75rem; }
+.conn button:hover { border-color:var(--accent); }
+
+.section { margin-bottom:1.25rem; }
+.sec-title { font-size:0.85rem; font-weight:600; border-bottom:1px solid var(--border);
+  padding-bottom:0.25rem; margin-bottom:0.5rem; }
+.row { display:flex; align-items:center; gap:0.4rem; margin-bottom:0.4rem; flex-wrap:wrap; }
+.row-label { font-size:0.8rem; color:var(--dim); min-width:80px; }
+
+.btn { padding:0.45rem 0.9rem; border-radius:8px; border:2px solid var(--border);
+  background:var(--bg); color:var(--text); cursor:pointer; font-size:0.8rem;
+  transition:all 0.12s; min-width:55px; text-align:center; }
+.btn:hover { background:var(--hover); border-color:var(--accent); }
+.btn:active { background:#2d5a8a; }
+.btn.on { border-color:var(--on); color:var(--on); }
+.btn.off { border-color:var(--off); color:var(--off); }
+
+.slider-row { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem; }
+.slider-row label { font-size:0.8rem; color:var(--dim); min-width:80px; }
+.slider-row input[type=range] { flex:1; }
+.slider-row .val { font-size:0.8rem; color:var(--accent); min-width:30px; text-align:right; }
+
+#log { background:var(--bg); border:1px solid var(--border); border-radius:8px;
+  padding:0.5rem; font-family:'SF Mono',monospace; font-size:0.65rem;
+  height:100px; overflow-y:auto; white-space:pre-wrap; color:var(--dim); margin-top:1rem; }
+
+.badge { display:inline-block; padding:0.15rem 0.4rem; border-radius:4px;
+  font-size:0.65rem; font-weight:600; margin-left:0.5rem; }
+.badge.direct { background:#1a3a1a; color:var(--on); border:1px solid #2a5a2a; }
+.footer { text-align:center; padding:1rem; color:var(--dim); font-size:0.7rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Direct Control — POC <span class="badge direct">NO CP</span></h1>
+  <div class="sub">Bypasses Crestron — talks to hardware directly</div>
+
+  <div class="conn">
+    <div class="dot" id="dot"></div>
+    <span class="lbl" id="connLbl">Disconnected</span>
+    <button onclick="doConnect()">Connect</button>
+  </div>
+
+  <!-- THINK OUTSIDE THE BOX -->
+  <div class="section">
+    <div class="sec-title">Think Outside The Box — TVs</div>
+    <div class="row">
+      <span class="row-label">All 4 TVs</span>
+      <button class="btn on" onclick="cmd('totb_tv','power_on')">All On</button>
+      <button class="btn off" onclick="cmd('totb_tv','power_off')">All Off</button>
+    </div>
+    <div class="row">
+      <span class="row-label">TV 1</span>
+      <button class="btn on" onclick="cmd('totb_tv','power_on',{tv:'tv1'})">On</button>
+      <button class="btn off" onclick="cmd('totb_tv','power_off',{tv:'tv1'})">Off</button>
+    </div>
+    <div class="row">
+      <span class="row-label">TV 2</span>
+      <button class="btn on" onclick="cmd('totb_tv','power_on',{tv:'tv2'})">On</button>
+      <button class="btn off" onclick="cmd('totb_tv','power_off',{tv:'tv2'})">Off</button>
+    </div>
+    <div class="row">
+      <span class="row-label">TV 3</span>
+      <button class="btn on" onclick="cmd('totb_tv','power_on',{tv:'tv3'})">On</button>
+      <button class="btn off" onclick="cmd('totb_tv','power_off',{tv:'tv3'})">Off</button>
+    </div>
+    <div class="row">
+      <span class="row-label">TV 4</span>
+      <button class="btn on" onclick="cmd('totb_tv','power_on',{tv:'tv4'})">On</button>
+      <button class="btn off" onclick="cmd('totb_tv','power_off',{tv:'tv4'})">Off</button>
+    </div>
+    <div class="row">
+      <span class="row-label">Source</span>
+      <button class="btn" onclick="cmd('totb_tv','source',{source:0x21})">HDMI 1</button>
+      <button class="btn" onclick="cmd('totb_tv','source',{source:0x23})">HDMI 2</button>
+    </div>
+    <div class="slider-row">
+      <label>Volume</label>
+      <input type="range" min="0" max="100" value="20" id="tvVol"
+        oninput="cmdThrottle('tvVol',100,'totb_tv','volume',function(){return{level:parseInt(document.getElementById('tvVol').value)}})">
+      <span class="val" id="tvVolVal">20</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Think Outside The Box — Lights (Helvar UDP → 10.0.81.101:50001)</div>
+    <div class="row">
+      <span class="row-label">Table (G30121)</span>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30121,level:0})">Off</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30121,level:25})">25%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30121,level:50})">50%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30121,level:75})">75%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30121,level:100})">100%</button>
+    </div>
+    <div class="row">
+      <span class="row-label">Couch (G30122)</span>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30122,level:0})">Off</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30122,level:25})">25%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30122,level:50})">50%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30122,level:75})">75%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30122,level:100})">100%</button>
+    </div>
+    <div class="row">
+      <span class="row-label">Sign (G30123)</span>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30123,level:0})">Off</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30123,level:25})">25%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30123,level:50})">50%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30123,level:75})">75%</button>
+      <button class="btn" onclick="cmd('totb_light','set_group',{group:30123,level:100})">100%</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Think Outside The Box — TV Elevator <span class="badge direct">DIRECT TO ARDUINO</span></div>
+    <div class="row" id="elevatorControls" style="opacity:0.3;pointer-events:none;">
+      <span class="row-label">Elevator</span>
+      <button class="btn on" onclick="cmd('totb_elevator','up')">Up</button>
+      <button class="btn" onclick="cmd('totb_elevator','stop')">Stop</button>
+      <button class="btn off" onclick="cmd('totb_elevator','down')">Down</button>
+    </div>
+    <div class="row">
+      <span class="row-label"></span>
+      <button class="btn" onclick="var el=document.getElementById('elevatorControls');if(el.style.pointerEvents==='none'){el.style.opacity='1';el.style.pointerEvents='auto';this.textContent='Lock Elevator';}else{el.style.opacity='0.3';el.style.pointerEvents='none';this.textContent='Unlock Elevator';}">Unlock Elevator</button>
+      <span style="color:var(--dim);font-size:0.7rem;margin-left:0.5rem;">Caution: may disrupt Crestron control</span>
+    </div>
+  </div>
+
+  <!-- JERNBANETORGET -->
+  <div class="section">
+    <div class="sec-title">Jernbanetorget — CueCore Sal A (Universe 6)</div>
+    <div class="row">
+      <span class="row-label">Presets</span>
+      <button class="btn off" onclick="cmd('jern_dmx','blackout')">Blackout</button>
+      <button class="btn on" onclick="cmd('jern_dmx','full')">Full</button>
+    </div>
+    <div class="row">
+      <span class="row-label">Playback 1</span>
+      <button class="btn" onclick="cmd('jern_dmx','set_playback',{playback:1,intensity:0})">Off</button>
+      <button class="btn" onclick="cmd('jern_dmx','set_playback',{playback:1,intensity:0.5})">50%</button>
+      <button class="btn" onclick="cmd('jern_dmx','set_playback',{playback:1,intensity:1.0})">100%</button>
+    </div>
+    <div class="row">
+      <span class="row-label">Playback 2</span>
+      <button class="btn" onclick="cmd('jern_dmx','set_playback',{playback:2,intensity:0})">Off</button>
+      <button class="btn" onclick="cmd('jern_dmx','set_playback',{playback:2,intensity:0.5})">50%</button>
+      <button class="btn" onclick="cmd('jern_dmx','set_playback',{playback:2,intensity:1.0})">100%</button>
+    </div>
+    <div class="slider-row">
+      <label>DMX Ch 1</label>
+      <input type="range" min="0" max="255" value="0" id="dmx1"
+        oninput="cmdThrottle('dmx1',100,'jern_dmx','set_channel',function(){return{channel:1,value:parseInt(document.getElementById('dmx1').value)}})">
+      <span class="val" id="dmx1val">0</span>
+    </div>
+    <div class="slider-row">
+      <label>DMX Ch 2</label>
+      <input type="range" min="0" max="255" value="0" id="dmx2"
+        oninput="cmdThrottle('dmx2',100,'jern_dmx','set_channel',function(){return{channel:2,value:parseInt(document.getElementById('dmx2').value)}})">
+      <span class="val" id="dmx2val">0</span>
+    </div>
+    <div class="slider-row">
+      <label>DMX Ch 3</label>
+      <input type="range" min="0" max="255" value="0" id="dmx3"
+        oninput="cmdThrottle('dmx3',100,'jern_dmx','set_channel',function(){return{channel:3,value:parseInt(document.getElementById('dmx3').value)}})">
+      <span class="val" id="dmx3val">0</span>
+    </div>
+  </div>
+
+  <div id="log"></div>
+  <div class="footer">Direct Control POC — No Crestron CP</div>
+</div>
+
+<script>
+const WS_URL = (location.port === '8090')
+  ? `ws://${location.hostname}:8091`
+  : `ws://${location.host}${location.pathname.replace(/\/[^/]*$/, '')}/ws`;
+let ws = null;
+
+function log(m) {
+  const el = document.getElementById('log');
+  el.textContent += `[${new Date().toLocaleTimeString()}] ${m}\n`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function doConnect() {
+  const dot = document.getElementById('dot');
+  const lbl = document.getElementById('connLbl');
+  dot.className = 'dot wait'; lbl.textContent = 'Connecting...';
+  ws = new WebSocket(WS_URL);
+  ws.onopen = () => { dot.className = 'dot ok'; lbl.textContent = 'Connected (direct)'; log('Connected'); };
+  ws.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+    if (d.ok) log(`✓ ${d.action || 'ok'}`);
+    else log(`✗ ${d.error || 'failed'}`);
+  };
+  ws.onclose = () => { dot.className = 'dot'; lbl.textContent = 'Disconnected'; log('Disconnected'); };
+  ws.onerror = () => { dot.className = 'dot'; lbl.textContent = 'Error'; };
+}
+
+function cmd(target, action, extra) {
+  if (!ws || ws.readyState !== 1) { log('Not connected'); return; }
+  const msg = Object.assign({target, action}, extra || {});
+  ws.send(JSON.stringify(msg));
+  log(`>>> ${target}/${action}`);
+}
+
+// Throttled command for sliders — sends immediately, then at most every intervalMs,
+// and always sends the final value when dragging stops
+let _throttle = {};
+function cmdThrottle(key, intervalMs, target, action, extraFn) {
+  var t = _throttle[key];
+  if (!t) t = _throttle[key] = {timer: null, pending: null, last: 0};
+  var now = Date.now();
+  var extra = typeof extraFn === 'function' ? extraFn() : extraFn;
+  if (now - t.last >= intervalMs) {
+    cmd(target, action, extra);
+    t.last = now;
+    t.pending = null;
+  } else {
+    t.pending = extra;
+    if (!t.timer) {
+      t.timer = setTimeout(function() {
+        if (t.pending !== null) { cmd(target, action, t.pending); t.last = Date.now(); }
+        t.pending = null; t.timer = null;
+      }, intervalMs - (now - t.last));
+    }
+  }
+}
+
+// Slider live display
+document.querySelectorAll('input[type=range]').forEach(s => {
+  s.addEventListener('input', () => {
+    const valEl = document.getElementById(s.id + (s.id === 'tvVol' ? 'Val' : 'val'));
+    if (valEl) valEl.textContent = s.value;
+  });
+});
+</script>
+</body>
+</html>

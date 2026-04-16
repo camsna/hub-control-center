@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MX6000 Control</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="status-bar">
+      <div class="header-title">
+        <h1>LED Wall Control</h1>
+        <button class="header-btn" id="btn-backup" title="Save MX6000 backup to desktop">Save Backup</button>
+      </div>
+      <div class="status-indicator" id="status-indicator">
+        <span class="dot"></span>
+        <span class="text">Connecting...</span>
+      </div>
+    </header>
+
+    <!-- VMP Warning -->
+    <div class="warning-banner" id="vmp-warning" style="display: none;">
+      <strong>VMP Lock Detected</strong><br>
+      Ask VMP user to click blank space in device list to release control.
+    </div>
+
+    <!-- Top Control Bar -->
+    <div class="top-controls">
+      <button class="top-btn initialize" id="btn-initialize">INITIALIZE</button>
+      <button class="top-btn blackout" id="btn-blackout">BLACKOUT</button>
+      <button class="top-btn freeze" id="btn-freeze">FREEZE</button>
+    </div>
+
+    <!-- Main Control Panel -->
+    <main class="control-panel">
+
+      <!-- Step 1: Stage Height -->
+      <section class="step" id="step-stage">
+        <h2>1. Stage Height</h2>
+        <p class="hint">Select current stage configuration</p>
+        <div class="button-group">
+          <button class="option-btn" data-stage="40">
+            40cm<br><small>6144 × 2304</small>
+          </button>
+          <button class="option-btn selected" data-stage="60">
+            60cm<br><small>6144 × 2215</small>
+          </button>
+          <button class="option-btn" data-stage="80">
+            80cm<br><small>6144 × 2113</small>
+          </button>
+          <button class="option-btn" data-stage="100">
+            100cm<br><small>6144 × 2011</small>
+          </button>
+        </div>
+        <!-- V1 Media Size Reference -->
+        <details class="reference-panel" id="reference-panel">
+          <summary>V1 Media Sizes (for content creation)</summary>
+          <div class="reference-content" id="reference-content">
+            <div class="reference-row">
+              <span class="ref-label">Visible Resolution:</span>
+              <span class="ref-value" id="ref-visible">6144×2215</span>
+            </div>
+            <div class="reference-row">
+              <span class="ref-label">Aspect Ratio:</span>
+              <span class="ref-value" id="ref-aspect">2.774:1</span>
+            </div>
+            <div class="reference-row">
+              <span class="ref-label">4K Canvas:</span>
+              <span class="ref-value" id="ref-4k">5992×2160</span>
+            </div>
+            <div class="reference-row">
+              <span class="ref-label">1080p Canvas:</span>
+              <span class="ref-value" id="ref-1080p">2996×1080</span>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Step 2: Primary Source -->
+      <section class="step" id="step-source">
+        <h2>2. Primary Source</h2>
+        <p class="hint">Select main video input</p>
+        <div class="button-group">
+          <button class="option-btn" data-source="mac">
+            Mac Studio<br><small>6144×2304 native</small>
+          </button>
+          <button class="option-btn" data-source="player">
+            Media Player<br><small>4K HDMI 1:2</small>
+          </button>
+          <button class="option-btn" data-source="tvone">
+            tvONE<br><small>4K matrix</small>
+          </button>
+          <button class="option-btn" data-source="sdi-single">
+            Single SDI<br><small>SDI 1</small>
+          </button>
+          <button class="option-btn" data-source="sdi-dual">
+            SDI 1+2<br><small>Side-by-side</small>
+          </button>
+          <button class="option-btn" data-source="sdi-quad">
+            SDI Quad<br><small>2×2 grid</small>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 3: Layout (for tvONE, Media Player, Single SDI) -->
+      <section class="step" id="step-layout" style="display: none;">
+        <h2>3. Layout</h2>
+        <p class="hint">Choose display mode</p>
+        <div class="button-group">
+          <button class="option-btn selected" data-layout="center">
+            16:9 Centered<br><small>Standard</small>
+          </button>
+          <button class="option-btn" data-layout="fill">
+            Fill Width<br><small>Stretch to fit</small>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 4: Window Size (for centered layouts) -->
+      <section class="step" id="step-size" style="display: none;">
+        <h2>4. Window Size</h2>
+        <p class="hint" id="size-hint">Select 16:9 foreground window size</p>
+        <div class="button-group">
+          <button class="option-btn selected" data-size="max">
+            Max<br><small id="size-max">3938 × 2215</small>
+          </button>
+          <button class="option-btn" data-size="large">
+            Large<br><small id="size-large">3347 × 1883</small>
+          </button>
+          <button class="option-btn" data-size="medium">
+            Medium<br><small id="size-medium">2757 × 1551</small>
+          </button>
+          <button class="option-btn" data-size="small">
+            Small<br><small id="size-small">2165 × 1218</small>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 5: Background Source -->
+      <section class="step" id="step-background" style="display: none;">
+        <h2>5. Background</h2>
+        <p class="hint">Optional layer behind primary source</p>
+        <div class="button-group">
+          <button class="option-btn selected" data-background="none">
+            None<br><small>Black background</small>
+          </button>
+          <button class="option-btn" data-background="player">
+            Media Player<br><small>HDMI 1:2</small>
+          </button>
+          <button class="option-btn" data-background="mac">
+            Mac Studio<br><small>HDMI 1:1</small>
+          </button>
+        </div>
+      </section>
+
+      <!-- Brightness Control -->
+      <section class="step" id="step-brightness">
+        <h2>Brightness</h2>
+        <div class="brightness-control">
+          <input type="range" id="brightness-slider" min="0" max="100" value="80"
+                 list="brightness-detents">
+          <datalist id="brightness-detents">
+            <option value="0" label="0%">
+            <option value="25" label="25%">
+            <option value="50" label="50%">
+            <option value="75" label="75%">
+            <option value="100" label="100%">
+          </datalist>
+          <div class="brightness-value">
+            <span id="brightness-display">80</span>%
+          </div>
+          <div class="brightness-presets">
+            <button class="preset-btn" data-brightness="0">0%</button>
+            <button class="preset-btn" data-brightness="25">25%</button>
+            <button class="preset-btn" data-brightness="50">50%</button>
+            <button class="preset-btn" data-brightness="75">75%</button>
+            <button class="preset-btn" data-brightness="100">100%</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Output Settings -->
+      <section class="step" id="step-output">
+        <details id="output-details">
+          <summary><h2 style="display:inline">Output Settings</h2> <span class="hint">Refresh Rate & Bit Depth</span></summary>
+        <div class="output-settings">
+          <!-- Sync Mode -->
+          <div class="output-row">
+            <label>Sync Mode:</label>
+            <div class="button-group compact">
+              <button class="option-btn small" data-syncmode="100">Internal Clock</button>
+              <button class="option-btn small" data-syncmode="102">Source Clock</button>
+            </div>
+          </div>
+          <!-- Refresh Rate (visible in Internal mode) -->
+          <div class="sync-detail" id="framerate-row">
+            <label>Refresh Rate: <span id="current-framerate" class="current-value"></span></label>
+            <div class="framerate-grid">
+              <button class="option-btn small" data-framerate="25">25 Hz</button>
+              <button class="option-btn small" data-framerate="30">30 Hz</button>
+              <button class="option-btn small" data-framerate="50">50 Hz</button>
+              <button class="option-btn small" data-framerate="60">60 Hz</button>
+            </div>
+            <div class="custom-framerate">
+              <label>Custom:</label>
+              <input type="number" id="custom-framerate" placeholder="e.g. 29.97" min="23.98" max="75" step="0.01">
+              <button class="option-btn small" id="btn-custom-framerate">Set</button>
+            </div>
+          </div>
+          <!-- Source Clock selection (visible in Source Clock mode) -->
+          <div class="sync-detail" id="source-clock-row" style="display: none;">
+            <label>Lock to Source: <span id="current-source-clock" class="current-value"></span></label>
+            <div id="source-clock-buttons" class="framerate-grid">
+              <span class="hint">Loading sources...</span>
+            </div>
+          </div>
+          <div class="output-row">
+            <label>Bit Depth: <span id="current-bitdepth" class="current-value"></span></label>
+            <div class="button-group compact">
+              <button class="option-btn small" data-bitdepth="0">8-bit</button>
+              <button class="option-btn small" data-bitdepth="255">Auto</button>
+            </div>
+          </div>
+        </div>
+        <!-- Bandwidth Result -->
+        <div class="bandwidth-calc" id="bandwidth-calc">
+          <div class="bandwidth-header">
+            <span class="bandwidth-title">Ethernet Load</span>
+            <span class="bandwidth-load" id="bandwidth-load">--%</span>
+            <span class="bandwidth-status" id="bandwidth-status">--</span>
+          </div>
+          <div class="bandwidth-bar-container">
+            <div class="bandwidth-bar" id="load-bar"></div>
+          </div>
+        </div>
+      </details>
+      </section>
+
+      <!-- Apply Button -->
+      <section class="step apply-section">
+        <button class="apply-btn" id="btn-apply">
+          Apply Configuration
+        </button>
+        <p class="apply-hint" id="apply-status"></p>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>MX6000 Pro | <span id="device-ip">10.0.81.207</span></p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

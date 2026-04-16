@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crestron Central — Clarion Hotel The Hub</title>
+<style>
+:root {
+  --bg-dark: #1a1a1e;
+  --bg-panel: #242428;
+  --bg-card: #2d2d32;
+  --bg-hover: #38383f;
+  --border: #3a3a42;
+  --text: #e8e8ec;
+  --text-dim: #8e8e96;
+  --accent: #4a9eff;
+  --accent-dim: #2d5a8a;
+  --on: #34c759;
+  --off: #ff3b30;
+  --warning: #ff9500;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.container { max-width: 900px; margin: 0 auto; padding: 1rem; }
+
+/* Header */
+.header {
+  padding: 1rem; background: var(--bg-panel); border-radius: 8px;
+  margin-bottom: 1rem; border: 1px solid var(--border);
+}
+.header h1 { font-size: 1.25rem; font-weight: 600; }
+.header .subtitle { color: var(--text-dim); font-size: 0.8rem; }
+
+/* Room sections */
+.room {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 0.75rem; overflow: hidden;
+}
+.room-header {
+  display: flex; align-items: center; padding: 1rem 1.25rem;
+  cursor: pointer; user-select: none; transition: background 0.15s;
+}
+.room-header:hover { background: var(--bg-hover); }
+.room-header .room-name { font-weight: 600; font-size: 1rem; flex: 1; }
+.room-header .room-id { color: var(--text-dim); font-size: 0.75rem; margin-right: 1rem; }
+.room-header .chevron {
+  color: var(--text-dim); transition: transform 0.2s; font-size: 0.8rem;
+}
+.room.open .chevron { transform: rotate(90deg); }
+.room-body { display: none; padding: 0 1.25rem 1.25rem; }
+.room.open .room-body { display: block; }
+
+/* Per-room connection bar */
+.room-conn {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 0.75rem; background: var(--bg-dark); border-radius: 8px;
+  margin-bottom: 0.75rem; font-size: 0.8rem; border: 1px solid var(--border);
+}
+.room-conn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--off); flex-shrink: 0; }
+.room-conn .dot.connected { background: var(--on); }
+.room-conn .dot.connecting { background: var(--warning); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.room-conn .conn-label { flex: 1; color: var(--text-dim); }
+.room-conn button {
+  padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text); cursor: pointer; font-size: 0.75rem;
+  font-family: inherit;
+}
+.room-conn button:hover { background: var(--bg-hover); border-color: var(--accent); }
+
+/* Section labels */
+.section-label {
+  font-size: 0.75rem; font-weight: 600; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin: 1rem 0 0.5rem; padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-label:first-child { margin-top: 0; }
+
+/* Button grid */
+.btn-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ctrl-btn {
+  padding: 0.6rem 1rem; border-radius: 8px; border: 2px solid var(--border);
+  background: var(--bg-dark); color: var(--text); cursor: pointer;
+  font-size: 0.875rem; font-family: inherit; transition: all 0.15s;
+  min-width: 72px; text-align: center;
+}
+.ctrl-btn:hover { background: var(--bg-hover); border-color: var(--accent); }
+.ctrl-btn:active { background: var(--accent-dim); }
+.ctrl-btn.active { background: var(--bg-hover); border-color: var(--on); box-shadow: 0 0 0 1px var(--on); color: var(--on); }
+.ctrl-btn.on { border-color: var(--on); color: var(--on); }
+.ctrl-btn.danger { border-color: var(--off); }
+.ctrl-btn.danger:hover { background: rgba(255,59,48,0.15); }
+
+/* Volume */
+.vol-row { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+.vol-row input[type=range] {
+  flex: 1; max-width: 280px; height: 6px; -webkit-appearance: none;
+  background: var(--bg-dark); border-radius: 3px; outline: none;
+}
+.vol-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; border: 2px solid var(--text);
+}
+.vol-row span { font-size: 0.8rem; color: var(--text-dim); min-width: 35px; }
+
+/* Log */
+.log-section { margin-top: 1rem; }
+.log-toggle {
+  font-size: 0.8rem; color: var(--text-dim); cursor: pointer;
+  padding: 0.5rem 0; user-select: none;
+}
+#log {
+  display: none; background: var(--bg-dark); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.75rem; font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.7rem; height: 150px; overflow-y: auto; margin-top: 0.5rem;
+  white-space: pre-wrap; color: var(--text-dim);
+}
+#log.open { display: block; }
+
+.footer {
+  text-align: center; padding: 1.5rem; color: var(--text-dim); font-size: 0.75rem;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Crestron Central</h1>
+    <div class="subtitle">Clarion Hotel The Hub — Meeting Rooms</div>
+  </div>
+
+  <div id="rooms"></div>
+
+  <div class="log-section">
+    <div class="log-toggle" onclick="document.getElementById('log').classList.toggle('open')">Show/Hide Log</div>
+    <div id="log"></div>
+  </div>
+
+  <div class="footer">Hub Technical Central Command</div>
+</div>
+
+<script>
+const WS_URL = (location.port === '8080')
+  ? `ws://${location.hostname}:8765`
+  : `ws://${location.host}${location.pathname.replace(/\/[^/]*$/, '')}/ws`;
+let ws = null;
+let activeRoom = null; // ipid of currently connected room
+
+const ROOMS = [
+  {id:'MR1',  name:'Alexander Platz',      ipid:'70', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR2',  name:'Darlin Harbour',       ipid:'74', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR3',  name:'Piazza Navona',        ipid:'78', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR4',  name:'Trafalgar Square',     ipid:'7C', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR5',  name:'Grand Place',          ipid:'80', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR6',  name:'Stureplan',            ipid:'84', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR7',  name:'The Latin Quarters',   ipid:'88', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR8',  name:'Senate Square',        ipid:'8C', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR9',  name:'Shibuya',              ipid:'90', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR10', name:'Red Square',           ipid:'94', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR11', name:'Times Square',         ipid:'B4', lights:['spot','ceiling','pendant'], blinds:true,  tv:true},
+  {id:'MR12', name:'Think Outside The Box',ipid:'B9', special:'totb'},
+  {id:'MR13', name:'Festplassen',          ipid:'98', lights:['spot','ceiling'],           blinds:false, tv:true},
+  {id:'MR14', name:'Nyhavn',               ipid:'9C', lights:['spot','ceiling'],           blinds:true,  tv:true},
+  {id:'MR15', name:'Taksim Square',        ipid:'A0', lights:['spot','ceiling'],           blinds:false, tv:true},
+];
+
+const LIGHT_ZONES = {
+  spot:    {label:'Spot Lights',   so:3},
+  ceiling: {label:'Ceiling Spots', so:4},
+  pendant: {label:'Pendant Lights',so:5},
+};
+
+const PRESETS = [
+  {label:'Off', join:9}, {label:'25%', join:7}, {label:'50%', join:5},
+  {label:'75%', join:3}, {label:'100%', join:1},
+];
+
+const TOTB_LIGHTS = [
+  {label:'Table Lights', so:3}, {label:'Couch Lights', so:4}, {label:'Sign Lights', so:10},
+];
+
+function buildRooms() {
+  document.getElementById('rooms').innerHTML = ROOMS.map(room => {
+    const isTOTB = room.special === 'totb';
+    let body = '';
+
+    // Per-room connect bar
+    body += `<div class="room-conn" id="conn_${room.ipid}">`;
+    body += `<div class="dot" id="dot_${room.ipid}"></div>`;
+    body += `<span class="conn-label" id="connlbl_${room.ipid}">Disconnected</span>`;
+    body += `<button onclick="event.stopPropagation(); roomConnect('${room.ipid}')">Connect</button>`;
+    body += `<button onclick="event.stopPropagation(); roomDisconnect('${room.ipid}')">Disconnect</button>`;
+    body += `</div>`;
+
+    // LIGHTS
+    const lightZones = isTOTB ? TOTB_LIGHTS : room.lights.map(z => LIGHT_ZONES[z]);
+    lightZones.forEach(zone => {
+      body += `<div class="section-label">${zone.label}</div><div class="btn-grid">`;
+      PRESETS.forEach(p => {
+        body += `<button class="ctrl-btn" onclick="soPress('${room.ipid}',${zone.so},${p.join})" id="r${room.ipid}_so${zone.so}j${p.join}">${p.label}</button>`;
+      });
+      body += `</div>`;
+    });
+
+    // TV
+    if (isTOTB) {
+      body += `<div class="section-label">TV</div><div class="btn-grid">`;
+      body += `<button class="ctrl-btn on" onclick="soPress('${room.ipid}',7,1)">TV On</button>`;
+      body += `<button class="ctrl-btn danger" onclick="soPress('${room.ipid}',7,3)">TV Off</button>`;
+      body += `</div>`;
+      body += `<div class="section-label">TV Source</div><div class="btn-grid">`;
+      body += `<button class="ctrl-btn" onclick="soPress('${room.ipid}',8,1)">Clickshare</button>`;
+      body += `<button class="ctrl-btn" onclick="soPress('${room.ipid}',8,3)">HDMI</button>`;
+      body += `</div>`;
+      body += `<div class="section-label">TV Elevator (navigates to Setup page first)</div><div class="btn-grid">`;
+      body += `<button class="ctrl-btn" onclick="totbElevator('${room.ipid}',1)">Up</button>`;
+      body += `<button class="ctrl-btn" onclick="totbElevator('${room.ipid}',3)">Stop</button>`;
+      body += `<button class="ctrl-btn" onclick="totbElevator('${room.ipid}',5)">Down</button>`;
+      body += `</div>`;
+    } else if (room.tv) {
+      body += `<div class="section-label">TV</div><div class="btn-grid">`;
+      body += `<button class="ctrl-btn on" onclick="soPress('${room.ipid}',6,1)">TV On</button>`;
+      body += `<button class="ctrl-btn danger" onclick="soPress('${room.ipid}',6,3)">TV Off</button>`;
+      body += `</div>`;
+      body += `<div class="section-label">TV Source</div><div class="btn-grid">`;
+      body += `<button class="ctrl-btn" onclick="soPress('${room.ipid}',6,5)">MAXHUB</button>`;
+      body += `<button class="ctrl-btn" onclick="soPress('${room.ipid}',6,7)">HDMI 2</button>`;
+      body += `</div>`;
+      const menuSO = (['98','9C','A0'].includes(room.ipid)) ? 1 : 8;
+      body += `<div class="section-label">Volume</div><div class="vol-row">`;
+      body += `<button class="ctrl-btn" onclick="setVol('${room.ipid}',${menuSO},0)">Mute</button>`;
+      body += `<input type="range" min="0" max="100" value="50" oninput="sendVol('${room.ipid}',${menuSO},this.value)" onchange="sendVolFinal('${room.ipid}',${menuSO},this.value)" id="vol_${room.ipid}">`;
+      body += `<span id="volpct_${room.ipid}">50</span></div>`;
+    }
+
+    // BLINDS
+    if (room.blinds && !isTOTB) {
+      body += `<div class="section-label">Blinds</div><div class="btn-grid">`;
+      body += `<button class="ctrl-btn" onclick="soPress('${room.ipid}',9,1)">Up</button>`;
+      body += `<button class="ctrl-btn" onclick="soPress('${room.ipid}',9,3)">Down</button>`;
+      body += `</div>`;
+    }
+
+    return `
+      <div class="room" id="room_${room.id}">
+        <div class="room-header" onclick="toggleRoom('${room.id}')">
+          <span class="room-name">${room.name}</span>
+          <span class="room-id">${room.id}</span>
+          <span class="chevron">&#9654;</span>
+        </div>
+        <div class="room-body">${body}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleRoom(id) {
+  document.getElementById('room_' + id).classList.toggle('open');
+}
+
+// ============================================================================
+// CONNECTION — per room
+// ============================================================================
+function ensureWS() {
+  return new Promise((resolve, reject) => {
+    if (ws && ws.readyState === 1) { resolve(); return; }
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => { log('WebSocket open'); resolve(); };
+    ws.onmessage = (e) => handleEvent(JSON.parse(e.data));
+    ws.onclose = () => {
+      log('WebSocket closed');
+      if (activeRoom) updateRoomConn(activeRoom, 'disconnected');
+      activeRoom = null;
+    };
+    ws.onerror = () => { reject(); };
+  });
+}
+
+async function roomConnect(ipid) {
+  updateRoomConn(ipid, 'connecting');
+  try {
+    await ensureWS();
+    // Disconnect previous room if different
+    if (activeRoom && activeRoom !== ipid) {
+      updateRoomConn(activeRoom, 'disconnected');
+    }
+    ws.send(JSON.stringify({cmd:'connect', ip_id:ipid}));
+    activeRoom = ipid;
+    tvPageSent = {};
+    updateRoomConn(ipid, 'connected');
+  } catch(e) {
+    updateRoomConn(ipid, 'disconnected');
+    log('Connection failed');
+  }
+}
+
+function roomDisconnect(ipid) {
+  if (ws && activeRoom === ipid) {
+    ws.send(JSON.stringify({cmd:'disconnect'}));
+    updateRoomConn(ipid, 'disconnected');
+    activeRoom = null;
+  }
+}
+
+function updateRoomConn(ipid, state) {
+  const dot = document.getElementById('dot_' + ipid);
+  const lbl = document.getElementById('connlbl_' + ipid);
+  if (!dot || !lbl) return;
+  dot.className = 'dot' + (state === 'connected' ? ' connected' : state === 'connecting' ? ' connecting' : '');
+  lbl.textContent = state === 'connected' ? 'Connected (0x' + ipid.toUpperCase() + ')' : state === 'connecting' ? 'Connecting...' : 'Disconnected';
+}
+
+// ============================================================================
+// COMMANDS
+// ============================================================================
+function soPress(ipid, soId, join) {
+  if (!ws || ws.readyState !== 1 || activeRoom !== ipid) {
+    log(`Not connected to ${ipid}`); return;
+  }
+  ws.send(JSON.stringify({cmd:'so_press', so_id:soId, join:join, ip_id:ipid}));
+  log(`>>> [${ipid}] SO${soId} j${join}`);
+}
+
+function dPress(ipid, join) {
+  if (!ws || ws.readyState !== 1 || activeRoom !== ipid) {
+    log(`Not connected to ${ipid}`); return;
+  }
+  ws.send(JSON.stringify({cmd:'d_press', join:join, ip_id:ipid}));
+  log(`>>> [${ipid}] d${join}`);
+}
+
+function totbElevator(ipid, elevJoin) {
+  if (!ws || ws.readyState !== 1 || activeRoom !== ipid) {
+    log(`Not connected to ${ipid}`); return;
+  }
+  // Navigate: Main Menu → Setup (SO1 j7), then Setup → TV tab (SO2 j1)
+  // Then send elevator command (SO5 join)
+  ws.send(JSON.stringify({cmd:'so_press', so_id:1, join:7, ip_id:ipid}));
+  setTimeout(function() {
+    ws.send(JSON.stringify({cmd:'so_press', so_id:2, join:1, ip_id:ipid}));
+    setTimeout(function() {
+      ws.send(JSON.stringify({cmd:'so_press', so_id:5, join:elevJoin, ip_id:ipid}));
+      log(`>>> [${ipid}] Elevator SO5 j${elevJoin} (after page nav)`);
+    }, 300);
+  }, 300);
+}
+
+let volThrottles = {};
+let tvPageSent = {};
+
+function sendVol(ipid, menuSO, val) {
+  if (activeRoom !== ipid) { log(`Not connected to ${ipid}`); return; }
+  val = parseInt(val);
+  const pctEl = document.getElementById('volpct_' + ipid);
+  if (pctEl) pctEl.textContent = val;
+  // Navigate to TV page once per session
+  if (!tvPageSent[ipid]) {
+    ws.send(JSON.stringify({cmd:'so_press', so_id:menuSO, join:3, ip_id:ipid}));
+    tvPageSent[ipid] = true;
+  }
+  // Throttle: send immediately if not recently sent, otherwise skip
+  const now = Date.now();
+  if (!volThrottles[ipid] || now - volThrottles[ipid] > 80) {
+    volThrottles[ipid] = now;
+    ws.send(JSON.stringify({cmd:'analog', join:1, value:val, ip_id:ipid}));
+  }
+}
+
+function sendVolFinal(ipid, menuSO, val) {
+  if (activeRoom !== ipid || !ws || ws.readyState !== 1) return;
+  val = parseInt(val);
+  ws.send(JSON.stringify({cmd:'analog', join:1, value:val, ip_id:ipid}));
+  log(`>>> [${ipid}] Vol a1=${val}/100`);
+}
+
+function setVol(ipid, menuSO, val) {
+  const slider = document.getElementById('vol_' + ipid);
+  if (slider) slider.value = val;
+  sendVol(ipid, menuSO, val);
+}
+
+// ============================================================================
+// FEEDBACK
+// ============================================================================
+function handleEvent(data) {
+  if (data.type === 'state_dump') {
+    log(`State: ${data.digitals}d ${data.analogs}a ${data.smart_objects}so [${data.ip_id || '?'}]`);
+    if (data.so_states) {
+      for (const [soId, joins] of Object.entries(data.so_states))
+        for (const [key, val] of Object.entries(joins))
+          updateFeedback(data.ip_id, parseInt(soId), key, val);
+    }
+  } else if (data.type === 'so_digital') {
+    updateFeedback(data.ip_id, data.so_id, `d${data.join}`, data.state);
+  } else if (data.type === 'connected') {
+    log(`CIP registered: 0x${data.ip_id}`);
+    if (activeRoom) updateRoomConn(activeRoom, 'connected');
+  } else if (data.type === 'error') {
+    log(`ERROR: ${data.message}`);
+  }
+}
+
+function updateFeedback(ipid, soId, key, val) {
+  if (!key.startsWith('d') || !ipid) return;
+  const fj = parseInt(key.substring(1));
+  const pressJoin = (fj / 2) * 2 - 1;
+  const btn = document.getElementById(`r${ipid}_so${soId}j${pressJoin}`);
+  if (btn) {
+    if (val === true || val === 'ON') btn.classList.add('active');
+    else btn.classList.remove('active');
+  }
+}
+
+// ============================================================================
+// LOG
+// ============================================================================
+function log(msg) {
+  const el = document.getElementById('log');
+  const ts = new Date().toLocaleTimeString();
+  el.textContent += `[${ts}] ${msg}\n`;
+  el.scrollTop = el.scrollHeight;
+}
+
+buildRooms();
+</script>
+</body>
+</html>

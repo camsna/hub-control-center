@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tech Schedule</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 1600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { padding: 30px 40px; background: white; border-bottom: 1px solid #e0e0e0; }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .header-titles { text-align: right; flex: 1; }
+    .week-title { font-size: 48px; font-weight: 700; color: #09CBCF; line-height: 1.1; margin-bottom: 8px; }
+    .date-title { font-size: 32px; font-weight: 400; color: #333; line-height: 1.2; }
+    .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .week-nav { display: flex; gap: 8px; align-items: center; }
+    .week-selector { padding: 10px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; background: white; cursor: pointer; min-width: 280px; }
+    .btn { padding: 10px 16px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; background: white; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn:hover:not(:disabled) { background: #f5f5f5; border-color: #09CBCF; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #09CBCF; color: white; border-color: #09CBCF; }
+    .btn-primary:hover:not(:disabled) { background: #08b5b9; }
+    .data-info { font-size: 12px; color: #666; }
+    .reauth-warning { background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .day-tabs { display: flex; gap: 4px; padding: 0 40px; background: #fafafa; border-bottom: 2px solid #e0e0e0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .day-tab { padding: 14px 24px; font-size: 14px; font-weight: 600; color: #666; background: transparent; border: none; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+    .day-tab:hover { color: #09CBCF; background: rgba(9,203,207,0.05); }
+    .day-tab.active { color: #09CBCF; border-bottom-color: #09CBCF; background: white; }
+    .table-container { padding: 30px 40px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-wrapper { min-width: 1200px; }
+    .schedule-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .schedule-table thead th { background: #09CBCF; color: white; text-align: center; padding: 14px 12px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .schedule-table tbody td { padding: 12px; border-bottom: 1px solid #e8e8e8; vertical-align: top; color: #000; text-align: center; }
+    .schedule-table tbody tr:hover { background: #fafafa; }
+    .floor-2nd { background: #ea9999 !important; }
+    .floor-1st { background: #ffe599 !important; }
+    .floor-3rd { background: #a4c2f4 !important; }
+    .floor-13th { background: #f4cccc !important; }
+    .col-time { font-weight: 700; font-size: 16px; white-space: nowrap; width: 140px; }
+    .col-venue { font-weight: 700; font-size: 16px; width: 200px; }
+    .col-client { width: 200px; } .col-contact { width: 150px; } .col-event { width: 250px; }
+    .col-equipment { width: 300px; font-size: 12px; white-space: pre-wrap; text-align: left; }
+    .col-notes { width: 300px; font-size: 12px; white-space: pre-wrap; text-align: left; }
+    .empty-state { padding: 60px 20px; text-align: center; color: #999; }
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+    .loading { padding: 60px 20px; text-align: center; color: #999; }
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .week-title { font-size: 28px; } .date-title { font-size: 18px; }
+      .header, .table-container { padding: 15px 20px; }
+      .day-tabs { padding: 0 10px; } .day-tab { padding: 12px 16px; font-size: 13px; }
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; border-radius: 0; }
+      .controls, .week-nav, .btn, .day-tabs, .data-info, .reauth-warning { display: none !important; }
+      .header { padding: 20px 0; border-bottom: 2px solid #000; }
+      .header-top { display: block; } .header-titles { text-align: left; }
+      .week-title { font-size: 24pt; color: #000; } .date-title { font-size: 16pt; }
+      .table-container { padding: 20px 0; } .table-wrapper { min-width: 0; }
+      .schedule-table { font-size: 9pt; }
+      .schedule-table thead th { background: #e0e0e0 !important; color: #000 !important; border: 1px solid #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .schedule-table tbody td { border: 1px solid #999; font-size: 8pt; }
+      .col-time, .col-venue { font-size: 9pt; } .col-equipment, .col-notes { font-size: 7pt; }
+      .floor-2nd, .floor-1st, .floor-3rd, .floor-13th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { margin: 1cm; size: landscape; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-top">
+        <div class="controls">
+          <div class="week-nav">
+            <button class="btn" id="prevWeek">&#8592;</button>
+            <select class="week-selector" id="weekSelect"></select>
+            <button class="btn" id="nextWeek">&#8594;</button>
+          </div>
+          <button class="btn btn-primary" id="currentWeek">Current Week</button>
+          <button class="btn" id="refreshBtn">&#128260; Refresh</button>
+          <button class="btn" id="printBtn">&#128424; Print</button>
+        </div>
+        <div class="header-titles">
+          <div class="week-title" id="weekTitle">Tech Schedule</div>
+          <div class="date-title" id="dateTitle">Loading...</div>
+        </div>
+      </div>
+      <div class="data-info">
+        Data as of: <span id="dataAsOf">&mdash;</span>
+        <span id="reauthWarning" class="reauth-warning" style="display:none;margin-left:12px;">Session expired - re-auth needed</span>
+      </div>
+    </div>
+    <div class="day-tabs" id="dayTabs"></div>
+    <div class="table-container">
+      <div id="tableContent" class="loading">Loading schedule...</div>
+    </div>
+  </div>
+
+<script>
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+let state = { weeks: [], selectedKey: null, weekData: null, currentDay: 'Monday' };
+
+async function fetchJSON(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return r.json();
+}
+
+async function init() {
+    try {
+        const [weeks, status] = await Promise.all([
+            fetchJSON('/api/weeks'),
+            fetchJSON('/api/status')
+        ]);
+        state.weeks = weeks;
+        document.getElementById('dataAsOf').textContent = status.dataAsOf || '\u2014';
+        if (status.needsReauth) document.getElementById('reauthWarning').style.display = 'inline';
+
+        // Find current week
+        const today = new Date();
+        const day = today.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + diff);
+        const currentKey = monday.toISOString().split('T')[0];
+
+        state.selectedKey = weeks.find(w => w.key === currentKey) ? currentKey : (weeks.length ? weeks[weeks.length - 1].key : null);
+
+        const todayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+        if (DAYS.includes(todayName)) state.currentDay = todayName;
+
+        if (state.selectedKey) await loadWeek(state.selectedKey);
+        renderWeekSelector();
+    } catch (e) {
+        document.getElementById('tableContent').innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#9888;</div><div>Error: ${e.message}</div></div>`;
+    }
+}
+
+async function loadWeek(key) {
+    state.selectedKey = key;
+    document.getElementById('tableContent').innerHTML = '<div class="loading">Loading...</div>';
+    try {
+        state.weekData = await fetchJSON(`/api/week/${key}`);
+        renderAll();
+    } catch (e) {
+        document.getElementById('tableContent').innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#9888;</div><div>${e.message}</div></div>`;
+    }
+}
+
+function renderAll() {
+    renderHeader();
+    renderDayTabs();
+    renderTable();
+}
+
+function renderWeekSelector() {
+    const sel = document.getElementById('weekSelect');
+    sel.innerHTML = state.weeks.map(w =>
+        `<option value="${w.key}" ${w.key === state.selectedKey ? 'selected' : ''}>${w.label}</option>`
+    ).join('');
+}
+
+function renderHeader() {
+    document.getElementById('weekTitle').textContent = state.weekData ? state.weekData.weekLabel : 'Tech Schedule';
+    const dayData = state.weekData && state.weekData.days[state.currentDay];
+    document.getElementById('dateTitle').textContent = dayData ? dayData.date : '';
+}
+
+function renderDayTabs() {
+    const tabs = document.getElementById('dayTabs');
+    tabs.innerHTML = DAYS.map(day =>
+        `<button class="day-tab ${day === state.currentDay ? 'active' : ''}" data-day="${day}">${day}</button>`
+    ).join('');
+    tabs.querySelectorAll('.day-tab').forEach(t => t.addEventListener('click', function(e) {
+        e.preventDefault();
+        state.currentDay = this.dataset.day;
+        renderAll();
+    }));
+}
+
+function esc(text) {
+    if (!text) return '';
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+
+function renderTable() {
+    const el = document.getElementById('tableContent');
+    const dayData = state.weekData && state.weekData.days[state.currentDay];
+    if (!dayData || !dayData.events || dayData.events.length === 0) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128197;</div><div>No events scheduled for ${state.currentDay}</div></div>`;
+        return;
+    }
+    const rows = dayData.events.map(e => {
+        const fc = e.floor ? `floor-${e.floor}` : '';
+        return `<tr>
+            <td class="col-time ${fc}">${esc(e.time)}</td>
+            <td class="col-venue ${fc}">${esc(e.venue)}</td>
+            <td class="col-client">${esc(e.client)}</td>
+            <td class="col-contact">${esc(e.contact)}</td>
+            <td class="col-event">${esc(e.event)}</td>
+            <td class="col-equipment">${esc(e.equipment)}</td>
+            <td class="col-notes">${esc(e.notes)}</td>
+        </tr>`;
+    }).join('');
+    el.innerHTML = `<div class="table-wrapper"><table class="schedule-table">
+        <thead><tr><th>Time</th><th>Venue</th><th>Client</th><th>Contact</th><th>Event</th><th>Equipment</th><th>Notes</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+}
+
+document.getElementById('weekSelect').addEventListener('change', e => loadWeek(e.target.value));
+document.getElementById('prevWeek').addEventListener('click', () => {
+    const i = state.weeks.findIndex(w => w.key === state.selectedKey);
+    if (i > 0) { loadWeek(state.weeks[i-1].key); renderWeekSelector(); }
+});
+document.getElementById('nextWeek').addEventListener('click', () => {
+    const i = state.weeks.findIndex(w => w.key === state.selectedKey);
+    if (i < state.weeks.length - 1) { loadWeek(state.weeks[i+1].key); renderWeekSelector(); }
+});
+document.getElementById('currentWeek').addEventListener('click', () => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const mon = new Date(today); mon.setDate(today.getDate() + diff);
+    const key = mon.toISOString().split('T')[0];
+    if (state.weeks.find(w => w.key === key)) { loadWeek(key); renderWeekSelector(); }
+    else alert('Current week not found in data');
+});
+document.getElementById('refreshBtn').addEventListener('click', () => init());
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+init();
+</script>
+</body>
+</html>

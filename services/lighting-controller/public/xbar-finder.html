@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XBAR Cell Finder</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1a2e; color: #eee;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    padding: 20px;
+  }
+  h1 { font-size: 1.4em; margin-bottom: 8px; color: #fff; }
+  .subtitle { color: #888; font-size: 0.9em; margin-bottom: 24px; text-align: center; max-width: 600px; }
+
+  .status-bar {
+    background: #222; border-radius: 8px; padding: 16px 24px;
+    margin-bottom: 20px; text-align: center; min-width: 500px; border: 1px solid #333;
+  }
+  .status-bar .big { color: #ffd43b; font-weight: bold; font-size: 1.5em; }
+  .status-bar .detail { color: #aaa; font-size: 0.95em; margin-top: 4px; }
+
+  .bar-select {
+    display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;
+  }
+  .bar-btn {
+    padding: 10px 16px; border-radius: 8px; border: 2px solid #444;
+    background: #222; color: #aaa; cursor: pointer; font-size: 0.95em;
+    transition: all 0.15s; font-weight: 600; min-width: 70px; text-align: center;
+  }
+  .bar-btn:hover { border-color: #69db7c; }
+  .bar-btn.active { border-color: #69db7c; color: #fff; background: #1a3a2e; }
+
+  .cell-grid {
+    display: flex; gap: 4px; margin-bottom: 20px; justify-content: center;
+  }
+  .cell-btn {
+    width: 56px; height: 72px; border-radius: 6px; border: 3px solid #333;
+    background: #222; color: #aaa; cursor: pointer; font-size: 0.85em;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: all 0.15s; font-weight: 600; gap: 2px;
+  }
+  .cell-btn .cell-num { font-size: 1.3em; }
+  .cell-btn .cell-ch { font-size: 0.6em; color: #666; }
+  .cell-btn:hover { border-color: #888; }
+  .cell-btn.active { border-color: #ffd43b; background: #3d3d00; color: #ffd43b; box-shadow: 0 0 12px rgba(255, 212, 59, 0.4); }
+  .cell-btn.active .cell-ch { color: #ffd43b; }
+
+  .nav-row { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+  .nav-btn {
+    width: 48px; height: 48px; border-radius: 50%; border: 2px solid #4dabf7;
+    background: #1a3a5c; color: #4dabf7; font-size: 1.4em; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; user-select: none;
+  }
+  .nav-btn:hover { background: #4dabf7; color: #fff; }
+  .mode-label { color: #aaa; font-size: 0.9em; }
+
+  .action-bar {
+    display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;
+  }
+  .action-btn {
+    padding: 8px 16px; border-radius: 6px; border: 1px solid #555;
+    background: #333; color: #ddd; cursor: pointer; font-size: 0.85em; transition: all 0.15s;
+  }
+  .action-btn:hover { background: #444; }
+  .action-btn.danger { border-color: #c92a2a; color: #ff6b6b; }
+  .action-btn.danger:hover { background: #c92a2a; color: #fff; }
+  .action-btn.primary { border-color: #4dabf7; color: #4dabf7; }
+  .action-btn.primary:hover { background: #4dabf7; color: #fff; }
+  .action-btn.success { border-color: #51cf66; color: #51cf66; }
+  .action-btn.success:hover { background: #2b8a3e; color: #fff; }
+
+  .info {
+    background: #222; border-radius: 8px; padding: 16px; max-width: 700px;
+    width: 100%; border: 1px solid #333; margin-bottom: 16px; font-size: 0.85em; color: #aaa;
+  }
+  .info strong { color: #ccc; }
+  .info .mono { font-family: monospace; color: #69db7c; }
+
+  .connection {
+    position: fixed; top: 8px; right: 12px; font-size: 0.75em;
+    padding: 4px 10px; border-radius: 12px; background: #222; border: 1px solid #333;
+  }
+  .connection.ok { color: #51cf66; border-color: #2b8a3e; }
+  .connection.err { color: #ff6b6b; border-color: #c92a2a; }
+
+  .keyboard-hint {
+    color: #666; font-size: 0.75em; margin-top: 8px; text-align: center;
+  }
+
+  .whole-bar-view {
+    display: flex; gap: 2px; margin-bottom: 20px; justify-content: center;
+    padding: 8px; background: #111; border-radius: 8px; border: 1px solid #333;
+  }
+  .whole-bar-view .mini-cell {
+    width: 40px; height: 24px; border-radius: 3px; background: #333;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65em; color: #888; font-weight: 600;
+  }
+  .whole-bar-view .mini-cell.lit { background: #ffd43b; color: #000; }
+</style>
+</head>
+<body>
+
+<h1>XBAR Cell Finder</h1>
+<p class="subtitle">12 XBARs on Truss 1 (Sal A, U2). Each bar has 12 cells. Light one cell at a time to map physical positions.</p>
+
+<div class="status-bar">
+  <div class="big" id="statusBig">XBAR 1 — Cell 1</div>
+  <div class="detail" id="statusDetail">U2 addr 100, cell ch 100–101</div>
+</div>
+
+<div class="bar-select" id="barSelect"></div>
+
+<div style="color:#888;font-size:0.8em;margin-bottom:8px;text-align:center">← Cell 1 ... Cell 12 → (assumed left to right)</div>
+<div class="whole-bar-view" id="barView"></div>
+
+<div class="cell-grid" id="cellGrid"></div>
+
+<div class="nav-row">
+  <button class="nav-btn" id="prevCell">◀</button>
+  <span class="mode-label" id="navLabel">Cell 1 / 12</span>
+  <button class="nav-btn" id="nextCell">▶</button>
+  <span style="color:#555;margin:0 8px">|</span>
+  <button class="nav-btn" id="prevBar" style="border-color:#69db7c;color:#69db7c">⇐</button>
+  <span class="mode-label">Bar</span>
+  <button class="nav-btn" id="nextBar" style="border-color:#69db7c;color:#69db7c">⇒</button>
+</div>
+
+<div class="action-bar">
+  <button class="action-btn primary" id="allCellsBtn">All 12 cells ON</button>
+  <button class="action-btn danger" id="offBtn">Bar OFF</button>
+  <button class="action-btn" id="cycleBtn">Cycle cells (0.5s)</button>
+  <button class="action-btn success" id="allBarsBtn">All 12 bars ON (full)</button>
+</div>
+
+<div class="info">
+  <strong>XBAR 32ch mode:</strong><br>
+  Ch 1–24: 12 cells × 2ch (coarse + fine dimmer)<br>
+  Ch 25–30: <span class="mono">R G B W A UV</span> (global color for all cells)<br>
+  Ch 31: Shutter (8–15 = open) &nbsp;|&nbsp; Ch 32: Rise-time (0 = instant)<br>
+  <br>
+  <strong>Bars:</strong> XBAR 1 (addr 100) → XBAR 12 (addr 452), 32ch spacing on U2
+</div>
+
+<p class="keyboard-hint">← → cell &nbsp;|&nbsp; [ ] prev/next bar &nbsp;|&nbsp; 0 = off &nbsp;|&nbsp; Space = all cells &nbsp;|&nbsp; C = cycle</p>
+
+<div class="connection" id="connStatus">connecting...</div>
+
+<script>
+const API = window.location.origin;
+const PRIORITY = 190;
+const DURATION = 30000;
+const UNIVERSE = 2;
+const NUM_BARS = 12;
+const CELLS_PER_BAR = 12;
+const CH_PER_BAR = 32;
+
+// XBAR addresses (from patch)
+const XBARS = [
+  { id: 1,  addr: 100 },
+  { id: 2,  addr: 132 },
+  { id: 3,  addr: 164 },
+  { id: 4,  addr: 196 },
+  { id: 5,  addr: 228 },
+  { id: 6,  addr: 260 },
+  { id: 7,  addr: 292 },
+  { id: 8,  addr: 324 },
+  { id: 9,  addr: 356 },
+  { id: 10, addr: 388 },
+  { id: 11, addr: 420 },
+  { id: 12, addr: 452 },
+];
+
+let currentBar = 0;   // index into XBARS
+let currentCell = 0;  // 0-11
+let cycleTimer = null;
+
+function barAddr() { return XBARS[currentBar].addr; }
+function cellChCoarse(cell) { return barAddr() + cell * 2; }
+function cellChFine(cell) { return barAddr() + cell * 2 + 1; }
+
+// Build bar selector
+function buildBarSelect() {
+  const container = document.getElementById('barSelect');
+  container.innerHTML = '';
+  XBARS.forEach((bar, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'bar-btn' + (idx === currentBar ? ' active' : '');
+    btn.textContent = 'XBAR ' + bar.id;
+    btn.addEventListener('click', () => { currentBar = idx; currentCell = 0; stopCycle(); update(); sendCell(); });
+    container.appendChild(btn);
+  });
+}
+
+// Build cell buttons
+function buildCellGrid() {
+  const grid = document.getElementById('cellGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < CELLS_PER_BAR; i++) {
+    const btn = document.createElement('button');
+    const coarse = cellChCoarse(i);
+    btn.className = 'cell-btn' + (i === currentCell ? ' active' : '');
+    btn.innerHTML = '<span class="cell-num">' + (i + 1) + '</span><span class="cell-ch">ch ' + coarse + '</span>';
+    btn.addEventListener('click', () => { currentCell = i; stopCycle(); update(); sendCell(); });
+    grid.appendChild(btn);
+  }
+}
+
+// Mini bar view
+function buildBarView() {
+  const view = document.getElementById('barView');
+  view.innerHTML = '';
+  for (let i = 0; i < CELLS_PER_BAR; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'mini-cell' + (i === currentCell ? ' lit' : '');
+    cell.textContent = i + 1;
+    view.appendChild(cell);
+  }
+}
+
+function update() {
+  const bar = XBARS[currentBar];
+  const coarse = cellChCoarse(currentCell);
+  document.getElementById('statusBig').textContent = 'XBAR ' + bar.id + ' — Cell ' + (currentCell + 1);
+  document.getElementById('statusDetail').textContent =
+    'U2 addr ' + bar.addr + ', cell dimmer ch ' + coarse + '–' + (coarse + 1);
+  document.getElementById('navLabel').textContent = 'Cell ' + (currentCell + 1) + ' / 12';
+  buildBarSelect();
+  buildCellGrid();
+  buildBarView();
+}
+
+// DMX: light one cell on one bar, everything else on that bar off
+async function sendCell() {
+  const addr = barAddr();
+  const channels = {};
+
+  // All cell dimmers off
+  for (let i = 0; i < CELLS_PER_BAR; i++) {
+    channels[addr + i * 2] = 0;       // coarse
+    channels[addr + i * 2 + 1] = 0;   // fine
+  }
+  // Light current cell
+  channels[addr + currentCell * 2] = 255;
+  channels[addr + currentCell * 2 + 1] = 0;
+
+  // Set color to white
+  channels[addr + 24] = 255;  // R
+  channels[addr + 25] = 255;  // G
+  channels[addr + 26] = 255;  // B
+  channels[addr + 27] = 255;  // W
+  channels[addr + 28] = 0;    // A
+  channels[addr + 29] = 0;    // UV
+
+  // Shutter open, instant rise
+  channels[addr + 30] = 10;   // Shutter (8-15 = open)
+  channels[addr + 31] = 0;    // Rise-time instant
+
+  try {
+    const resp = await fetch(API + '/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [UNIVERSE]: channels, priority: PRIORITY, duration: DURATION })
+    });
+    const data = await resp.json();
+    setConnStatus(data.ok);
+  } catch (err) { setConnStatus(false); }
+}
+
+async function sendAllCells() {
+  stopCycle();
+  const addr = barAddr();
+  const channels = {};
+  for (let i = 0; i < CELLS_PER_BAR; i++) {
+    channels[addr + i * 2] = 255;
+    channels[addr + i * 2 + 1] = 0;
+  }
+  channels[addr + 24] = 255; channels[addr + 25] = 255;
+  channels[addr + 26] = 255; channels[addr + 27] = 255;
+  channels[addr + 28] = 0;   channels[addr + 29] = 0;
+  channels[addr + 30] = 10;  channels[addr + 31] = 0;
+  try {
+    const resp = await fetch(API + '/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [UNIVERSE]: channels, priority: PRIORITY, duration: DURATION })
+    });
+    setConnStatus(resp.ok);
+  } catch (err) { setConnStatus(false); }
+}
+
+async function sendAllBars() {
+  stopCycle();
+  const channels = {};
+  XBARS.forEach(bar => {
+    const addr = bar.addr;
+    for (let i = 0; i < CELLS_PER_BAR; i++) {
+      channels[addr + i * 2] = 255;
+      channels[addr + i * 2 + 1] = 0;
+    }
+    channels[addr + 24] = 255; channels[addr + 25] = 255;
+    channels[addr + 26] = 255; channels[addr + 27] = 255;
+    channels[addr + 28] = 0;   channels[addr + 29] = 0;
+    channels[addr + 30] = 10;  channels[addr + 31] = 0;
+  });
+  try {
+    await fetch(API + '/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [UNIVERSE]: channels, priority: PRIORITY, duration: DURATION })
+    });
+  } catch (err) {}
+}
+
+async function sendOff() {
+  stopCycle();
+  const addr = barAddr();
+  const channels = {};
+  for (let i = 0; i < CH_PER_BAR; i++) channels[addr + i] = 0;
+  try {
+    await fetch(API + '/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [UNIVERSE]: channels, priority: PRIORITY, duration: DURATION })
+    });
+  } catch (err) {}
+}
+
+function cycleCells() {
+  if (cycleTimer) { stopCycle(); return; }
+  const btn = document.getElementById('cycleBtn');
+  btn.textContent = 'Stop Cycle';
+  btn.style.borderColor = '#ff6b6b'; btn.style.color = '#ff6b6b';
+  currentCell = 0;
+  update(); sendCell();
+  cycleTimer = setInterval(() => {
+    currentCell = (currentCell + 1) % CELLS_PER_BAR;
+    update(); sendCell();
+  }, 500);
+}
+
+function stopCycle() {
+  if (cycleTimer) {
+    clearInterval(cycleTimer);
+    cycleTimer = null;
+    const btn = document.getElementById('cycleBtn');
+    btn.textContent = 'Cycle cells (0.5s)';
+    btn.style.borderColor = '#555'; btn.style.color = '#ddd';
+  }
+}
+
+function setConnStatus(ok) {
+  const el = document.getElementById('connStatus');
+  el.textContent = ok ? 'connected' : 'disconnected';
+  el.className = 'connection ' + (ok ? 'ok' : 'err');
+}
+
+// Events
+document.getElementById('prevCell').addEventListener('click', () => {
+  if (currentCell > 0) { currentCell--; stopCycle(); update(); sendCell(); }
+});
+document.getElementById('nextCell').addEventListener('click', () => {
+  if (currentCell < 11) { currentCell++; stopCycle(); update(); sendCell(); }
+});
+document.getElementById('prevBar').addEventListener('click', () => {
+  if (currentBar > 0) { currentBar--; currentCell = 0; stopCycle(); update(); sendCell(); }
+});
+document.getElementById('nextBar').addEventListener('click', () => {
+  if (currentBar < 11) { currentBar++; currentCell = 0; stopCycle(); update(); sendCell(); }
+});
+document.getElementById('allCellsBtn').addEventListener('click', sendAllCells);
+document.getElementById('offBtn').addEventListener('click', sendOff);
+document.getElementById('cycleBtn').addEventListener('click', cycleCells);
+document.getElementById('allBarsBtn').addEventListener('click', sendAllBars);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') { e.preventDefault(); document.getElementById('prevCell').click(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); document.getElementById('nextCell').click(); }
+  else if (e.key === '[') { document.getElementById('prevBar').click(); }
+  else if (e.key === ']') { document.getElementById('nextBar').click(); }
+  else if (e.key === '0') { sendOff(); }
+  else if (e.key === ' ') { e.preventDefault(); sendAllCells(); }
+  else if (e.key.toLowerCase() === 'c') { cycleCells(); }
+});
+
+// Init
+update();
+fetch(API + '/status')
+  .then(r => r.json())
+  .then(() => { setConnStatus(true); sendCell(); })
+  .catch(() => setConnStatus(false));
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir websockets
+
+COPY bridge.py .
+COPY *.html .
+
+EXPOSE 8080 8765
+
+CMD ["python3", "-u", "bridge.py"]

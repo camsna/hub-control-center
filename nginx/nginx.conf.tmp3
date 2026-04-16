@@ -1,0 +1,210 @@
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    
+    access_log /var/log/nginx/access.log;
+    error_log  /var/log/nginx/error.log;
+
+    # Upstreams (bridge network containers)
+    upstream mx6000      { server mx6000-control:3000; }
+    upstream hub-tools   { server hub-tools:80; }
+    upstream docs        { server hub-docs:80; }
+    upstream portainer   { server hub-portainer:9000; }
+    upstream crestron    { server crestron-central:8080; }
+    upstream crestron-ws { server crestron-central:8765; }
+
+    # Landing page: tech.hub
+    server {
+        listen 80;
+        server_name tech.hub;
+        
+        root /usr/share/nginx/html;
+        index index.html;
+    }
+
+    # Admin page: admin.tech.hub (PASSWORD PROTECTED)
+    server {
+        listen 80;
+        server_name admin.tech.hub;
+        
+        auth_basic "Hub Tech Admin";
+        auth_basic_user_file /etc/nginx/htpasswd;
+        
+        root /usr/share/nginx/html;
+        
+        location / {
+            try_files /admin.html =404;
+        }
+    }
+
+    # Portainer: portainer.tech.hub (PASSWORD PROTECTED)
+    server {
+        listen 80;
+        server_name portainer.tech.hub;
+        
+        auth_basic "Hub Tech Admin";
+        auth_basic_user_file /etc/nginx/htpasswd;
+        
+        location / {
+            proxy_pass http://portainer;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+        }
+    }
+
+    # Lighting: lighting.tech.hub (host network container on port 8081)
+    server {
+        listen 80;
+        server_name lighting.tech.hub;
+        
+        location / {
+            proxy_pass http://10.0.81.223:8081;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }
+
+    # MX6000: mx6000.tech.hub and ledwall.tech.hub
+    server {
+        listen 80;
+        server_name mx6000.tech.hub ledwall.tech.hub;
+        
+        location / {
+            proxy_pass http://mx6000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }
+
+    # Reference tools: tools.tech.hub
+    server {
+        listen 80;
+        server_name tools.tech.hub;
+        
+        location / {
+            proxy_pass http://hub-tools;
+        }
+    }
+
+    # Documentation: docs.tech.hub
+    server {
+        listen 80;
+        server_name docs.tech.hub;
+        
+        location / {
+            proxy_pass http://docs;
+        }
+    }
+
+    # Crestron Central: crestron.tech.hub
+    server {
+        listen 80;
+        server_name crestron.tech.hub;
+        
+        location / {
+            proxy_pass http://crestron;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+        
+        location /ws {
+            proxy_pass http://crestron-ws;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_read_timeout 86400;
+        }
+    }
+
+    # IP-BASED ACCESS (default_server)
+    # Allows access via http://10.0.81.223/path/
+    server {
+        listen 80 default_server;
+        
+        root /usr/share/nginx/html;
+        index index.html;
+
+        # Landing page
+        location = / {
+            try_files /index.html =404;
+        }
+
+        # API routing for MX6000 (when accessed via IP)
+        # The mx6000 frontend at /mx6000/ makes API calls to /api/*
+        location /api/ {
+            proxy_pass http://mx6000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # Lighting Controller: /lighting/
+        location /lighting/ {
+            rewrite ^/lighting/(.*) /$1 break;
+            proxy_pass http://10.0.81.223:8081;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+        location = /lighting {
+            return 301 /lighting/;
+        }
+
+        # Hub Tools (lighting-reference, etc): /tools/
+        location /tools/ {
+            rewrite ^/tools/(.*) /$1 break;
+            proxy_pass http://hub-tools;
+        }
+        location = /tools {
+            return 301 /tools/;
+        }
+
+        # MX6000 LED Wall: /mx6000/
+        location /mx6000/ {
+            rewrite ^/mx6000/(.*) /$1 break;
+            proxy_pass http://mx6000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+        location = /mx6000 {
+            return 301 /mx6000/;
+        }
+
+        # Documentation: /docs/
+        location /docs/ {
+            rewrite ^/docs/(.*) /$1 break;
+            proxy_pass http://docs;
+        }
+        location = /docs {
+            return 301 /docs/;
+        }
+
+        # Portainer (protected): /portainer/
+        location /portainer/ {
+            auth_basic "Hub Tech Admin";
+            auth_basic_user_file /etc/nginx/htpasswd;
+            rewrite ^/portainer/(.*) /$1 break;
+            proxy_pass http://portainer;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+        }
+        location = /portainer {
+            return 301 /portainer/;
+        }
+    }
+}

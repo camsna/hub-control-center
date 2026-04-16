@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hub - Technical Tools</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a25;
+            --border: #2a2a38;
+            --text: #f0f0f5;
+            --text-dim: #8888a0;
+            --accent: #4a9eff;
+            --accent-glow: rgba(74, 158, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 80px 24px 60px;
+            background: linear-gradient(180deg, #101018 0%, var(--bg-dark) 100%);
+        }
+
+        .hotel-name {
+            font-size: 11px;
+            letter-spacing: 6px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        h1 {
+            font-size: 56px;
+            font-weight: 200;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        h1 span {
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), #7dd3fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px 24px 60px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), transparent 80%);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px var(--accent),
+                0 0 60px var(--accent-glow);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .tool-icon svg {
+            width: 28px;
+            height: 28px;
+            stroke: var(--accent);
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        .tool-card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .tool-card p {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .tool-meta {
+            display: flex;
+            align-items: center;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .tool-type {
+            padding: 5px 12px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px 24px;
+            color: var(--text-dim);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        footer strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 50px 20px 40px; }
+            h1 { font-size: 36px; }
+            .tools-grid { gap: 16px; }
+            .tool-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="hotel-name">Clarion Hotel</div>
+        <h1>The <span>Hub</span></h1>
+        <p class="subtitle">Technical Control Systems</p>
+    </header>
+
+    <main>
+        <div class="tools-grid">
+            <a href="http://10.0.81.231:3000/" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <path d="M8 21h8" />
+                        <path d="M12 17v4" />
+                    </svg>
+                </div>
+                <h2>LED Wall Controller</h2>
+                <p>Novastar MX6000 Pro control interface. Layer management, source switching, and brightness control for the video wall.</p>
+                <div class="tool-meta">
+                    <span class="tool-type">Video</span>
+                </div>
+            </a>
+
+            <a href="http://10.0.81.231:8081/controller.html" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 18h6" />
+                        <path d="M10 22h4" />
+                        <path d="M12 2v1" />
+                        <path d="M12 3a6 6 0 0 1 6 6c0 3-2 5.5-3 7h-6c-1-1.5-3-4-3-7a6 6 0 0 1 6-6z" />
+                    </svg>
+                </div>
+                <h2>Lighting Controller</h2>
+                <p>Jernbanetorget DMX control. Fixture selection, presets, and house light management for Sal A, B, and C.</p>
+                <div class="tool-meta">
+                    <span class="tool-type">Lighting</span>
+                </div>
+            </a>
+
+            <a href="/lighting-reference.html" class="tool-card">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <line x1="10" y1="9" x2="8" y2="9" />
+                    </svg>
+                </div>
+                <h2>Lighting Reference</h2>
+                <p>DMX channel reference, fixture plot, and universe mapping documentation for the lighting system.</p>
+                <div class="tool-meta">
+                    <span class="tool-type">Documentation</span>
+                </div>
+            </a>
+
+            <a href="https://script.google.com/macros/s/AKfycbw7v8YZTCX_kUnzfX-DRk3cW3mu27vniv-4M3s8UAOZN0DM9hDATEwvWFyVlqtgrVgi/exec" class="tool-card" target="_blank" rel="noopener">
+                <div class="tool-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="23" />
+                        <line x1="8" y1="23" x2="16" y2="23" />
+                    </svg>
+                </div>
+                <h2>Wireless Mic Frequencies</h2>
+                <p>Frequency coordination reference for wireless microphone systems. Channel assignments and interference avoidance.</p>
+                <div class="tool-meta">
+                    <span class="tool-type">Documentation</span>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <p><strong>Clarion Hotel The Hub</strong> · Oslo</p>
+    </footer>
+</body>
+</html>

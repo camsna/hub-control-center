@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireless Frequency Chart - The Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 10mm; }
+        @media print {
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+            .page { box-shadow: none !important; }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f1f5f9; padding: 20px;
+        }
+        .page {
+            width: 210mm; min-height: 297mm; background: white;
+            margin: 0 auto; padding: 10mm; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .loading { text-align: center; padding: 60px; color: #64748b; font-size: 14px; }
+        .error { text-align: center; padding: 40px; color: #dc2626; font-size: 14px; }
+        .tab-buttons { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 10px 20px; border: 2px solid #1e3a5f; background: white;
+            color: #1e3a5f; font-size: 13px; font-weight: 600;
+            border-radius: 6px; cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn:hover { background: #e8f4fc; }
+        .tab-btn.active { background: #1e3a5f; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .header {
+            background: #1e3a5f; border-radius: 6px; padding: 14px 18px;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .header h1 { color: white; font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+        .header .subtitle { color: white; font-size: 12px; font-weight: 400; }
+        .header .note { color: #94a3b8; font-size: 9px; text-align: right; }
+        .floor-badge {
+            display: inline-block; background: #3b82f6; color: white;
+            padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 8px;
+        }
+        .section-header {
+            background: #1e3a5f; color: white; padding: 5px 10px; border-radius: 4px;
+            font-size: 10px; font-weight: 700; margin-bottom: 6px; display: inline-block;
+        }
+        .section-header.orange { background: #ea580c; }
+        .section-header.teal { background: #0d9488; }
+        .section-header.gray { background: #475569; }
+        .system-badge {
+            font-size: 8px; font-weight: 600; padding: 2px 6px;
+            border-radius: 3px; margin-left: 8px; vertical-align: middle;
+        }
+        .badge-ewd { background: #dbeafe; color: #1e40af; }
+        .badge-g4 { background: #fef3c7; color: #92400e; }
+        .cart-section { margin-bottom: 10px; }
+        .cart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .cart-box { border-radius: 5px; padding: 8px 10px; border: 1px solid #cbd5e1; }
+        .cart-box h3 { color: #1e3a5f; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .cart-box .transmitters { display: flex; gap: 6px; }
+        .cart-box.midas .transmitters { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; }
+        .cart-box .tx { flex: 1; }
+        .cart-box .tx-label { font-size: 9px; font-weight: 700; color: #1e293b; }
+        .cart-box .tx-freq { font-size: 9px; color: #475569; }
+        .cart-1 { background: #dbeafe; } .cart-2 { background: #dcfce7; }
+        .cart-3 { background: #fef3c7; } .cart-4 { background: #fce7f3; }
+        .cart-5 { background: #e0e7ff; } .cart-6 { background: #ccfbf1; }
+        .cart-7 { background: #fed7aa; } .cart-midas { background: #ede9fe; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .two-col .col-header { display: flex; justify-content: flex-start; margin-bottom: 6px; }
+        .info-box { border-radius: 5px; padding: 8px 10px; border: 1px solid #cbd5e1; }
+        .info-box.orange-bg { background: #fff7ed; }
+        .info-box.teal-bg { background: #f0fdfa; }
+        .info-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 9px; }
+        .info-row .label { font-weight: 700; color: #1e293b; }
+        .info-row .freq { color: #475569; }
+        .band-section { margin-bottom: 8px; }
+        .band-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        .band-box { border-radius: 5px; padding: 8px; text-align: center; border: 1px solid; }
+        .band-box.blue { background: #e8f4fc; border-color: #2d5a87; }
+        .band-box.orange { background: #fff7ed; border-color: #ea580c; }
+        .band-box.teal { background: #f0fdfa; border-color: #0d9488; }
+        .band-box h4 { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+        .band-box.blue h4 { color: #1e3a5f; }
+        .band-box.orange h4 { color: #ea580c; }
+        .band-box.teal h4 { color: #0d9488; }
+        .band-box .range { font-size: 9px; color: #1e293b; margin-bottom: 1px; }
+        .band-box .desc { font-size: 8px; color: #64748b; }
+        .footer { text-align: right; color: #94a3b8; font-size: 8px; margin-top: 8px; }
+        .print-btn {
+            padding: 10px 20px; border: 2px solid #065f46; background: #065f46;
+            color: white; font-size: 13px; font-weight: 600; border-radius: 6px;
+            cursor: pointer; margin-left: auto;
+        }
+        .print-btn:hover { background: #047857; border-color: #047857; }
+        .quick-ref-header {
+            background: #1e3a5f; border-radius: 6px; padding: 14px 18px; margin-bottom: 16px;
+        }
+        .quick-ref-header h1 { color: white; font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+        .quick-ref-header .subtitle { color: #94a3b8; font-size: 11px; }
+        .freq-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .freq-column h3 {
+            font-size: 12px; font-weight: 700; color: #1e3a5f;
+            margin-bottom: 4px; padding-bottom: 6px; border-bottom: 2px solid #1e3a5f;
+        }
+        .freq-column .system-note { font-size: 10px; color: #64748b; margin-bottom: 10px; }
+        .freq-list { list-style: none; padding: 0; margin: 0; }
+        .freq-list li {
+            font-size: 13px; font-weight: 500; color: #1e293b; padding: 4px 0;
+            border-bottom: 1px solid #e2e8f0; font-variant-numeric: tabular-nums;
+        }
+        .freq-list li:last-child { border-bottom: none; }
+        .floor-2f-row { display: flex; flex-direction: column; gap: 6px; }
+        .floor-2f-box { border-radius: 5px; padding: 8px 10px; border: 1px solid #cbd5e1; }
+        .floor-2f-box:nth-child(odd) { background: #d1fae5; }
+        .floor-2f-box:nth-child(even) { background: #a7f3d0; }
+        .floor-2f-box h3 { color: #1e3a5f; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .floor-2f-box .transmitters { display: flex; gap: 6px; }
+        .floor-2f-box .tx { flex: 1; }
+        .floor-2f-box .tx-label { font-size: 9px; font-weight: 700; color: #1e293b; }
+        .floor-2f-box .tx-freq { font-size: 9px; color: #475569; }
+        /* ====== DARK THEME (screen only) ====== */
+        @media screen {
+            body { background: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+            .page { background: #0a0a0f; box-shadow: none; width: auto; min-height: auto; max-width: 900px; padding: 20px; }
+            .tab-btn { background: #12121a; color: #8888a0; border-color: #2a2a38; }
+            .tab-btn:hover { background: #1a1a25; color: #f0f0f5; }
+            .tab-btn.active { background: #1a1a25; color: #4a9eff; border-color: #4a9eff; }
+            .print-btn { background: #2a2a38; color: #8888a0; border-color: #2a2a38; }
+            .print-btn:hover { background: #3a3a42; color: #f0f0f5; }
+            .header { background: #12121a; border: 1px solid #2a2a38; }
+            .header h1 { color: #f0f0f5; }
+            .header .subtitle { color: #8888a0; }
+            .header .note { color: #5a5a6a; }
+            .floor-badge { background: #4a9eff; }
+            .section-header { background: #1a1a25; color: #4a9eff; border: 1px solid #2a2a38; }
+            .section-header.orange { background: rgba(234, 88, 12, 0.15); color: #ff9500; border-color: rgba(234, 88, 12, 0.3); }
+            .section-header.teal { background: rgba(13, 148, 136, 0.15); color: #34c759; border-color: rgba(13, 148, 136, 0.3); }
+            .section-header.gray { background: #1a1a25; color: #8888a0; border-color: #2a2a38; }
+            .cart-box { border-color: #2a2a38; }
+            .cart-box h3 { color: #f0f0f5; }
+            .cart-box .tx-label { color: #f0f0f5; }
+            .cart-box .tx-freq { color: #8888a0; }
+            .cart-1 { background: rgba(59, 130, 246, 0.1); } .cart-2 { background: rgba(34, 197, 94, 0.1); }
+            .cart-3 { background: rgba(234, 179, 8, 0.1); } .cart-4 { background: rgba(236, 72, 153, 0.1); }
+            .cart-5 { background: rgba(99, 102, 241, 0.1); } .cart-6 { background: rgba(20, 184, 166, 0.1); }
+            .cart-7 { background: rgba(251, 146, 60, 0.1); } .cart-midas { background: rgba(139, 92, 246, 0.1); }
+            .info-box { border-color: #2a2a38; }
+            .info-box.orange-bg { background: rgba(234, 88, 12, 0.05); }
+            .info-box.teal-bg { background: rgba(13, 148, 136, 0.05); }
+            .info-row .label { color: #f0f0f5; }
+            .info-row .freq { color: #8888a0; }
+            .band-box { border-color: #2a2a38; }
+            .band-box.blue { background: rgba(74, 158, 255, 0.08); border-color: rgba(74, 158, 255, 0.3); }
+            .band-box.blue h4 { color: #4a9eff; }
+            .band-box.orange { background: rgba(234, 88, 12, 0.08); border-color: rgba(234, 88, 12, 0.3); }
+            .band-box.orange h4 { color: #ff9500; }
+            .band-box.teal { background: rgba(13, 148, 136, 0.08); border-color: rgba(13, 148, 136, 0.3); }
+            .band-box.teal h4 { color: #34c759; }
+            .band-box .range { color: #f0f0f5; }
+            .band-box .desc { color: #6a6a7a; }
+            .footer { color: #3a3a42; }
+            .quick-ref-header { background: #12121a; border: 1px solid #2a2a38; }
+            .quick-ref-header h1 { color: #f0f0f5; }
+            .quick-ref-header .subtitle { color: #8888a0; }
+            .freq-column h3 { color: #4a9eff; border-bottom-color: #2a2a38; }
+            .freq-column .system-note { color: #5a5a6a; }
+            .freq-list li { color: #f0f0f5; border-bottom-color: #1a1a25; }
+            .loading { color: #8888a0; }
+            .error { color: #ff6b6b; }
+            .error a { color: #4a9eff; }
+            .floor-2f-box { border-color: #2a2a38; }
+            .floor-2f-box:nth-child(odd) { background: rgba(13, 148, 136, 0.08); }
+            .floor-2f-box:nth-child(even) { background: rgba(13, 148, 136, 0.12); }
+            .floor-2f-box h3 { color: #f0f0f5; }
+            .floor-2f-box .tx-label { color: #f0f0f5; }
+            .floor-2f-box .tx-freq { color: #8888a0; }
+            .badge-ewd { background: rgba(74, 158, 255, 0.15); color: #4a9eff; }
+            .badge-g4 { background: rgba(234, 179, 8, 0.15); color: #fbbf24; }
+            .system-badge { border: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="tab-buttons no-print">
+            <button class="tab-btn active" onclick="showTab(this,'detailed')">1F Detailed</button>
+            <button class="tab-btn" onclick="showTab(this,'quick')">1F Quick Ref</button>
+            <button class="tab-btn" onclick="showTab(this,'detailed2f')">2F Detailed</button>
+            <button class="tab-btn" onclick="showTab(this,'quick2f')">2F Quick Ref</button>
+            <button class="print-btn no-print" onclick="window.print()">Print / Save PDF</button>
+        </div>
+        <div id="detailed" class="tab-content active"><div class="loading">Loading frequency data from spreadsheet...</div></div>
+        <div id="quick" class="tab-content"></div>
+        <div id="detailed2f" class="tab-content"></div>
+        <div id="quick2f" class="tab-content"></div>
+    </div>
+
+<script>
+const SHEET_ID = '1KdgC9K7lldoBfUJrgzN8ZoXmkuLcGFPlxQAeUsbxZdw';
+const BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=`;
+
+function fetchSheet(name) {
+    return fetch(BASE + encodeURIComponent(name))
+        .then(r => r.text())
+        .then(t => JSON.parse(t.replace(/^[^{]*/, '').replace(/[^}]*$/, '')));
+}
+
+function val(cell) { return cell ? cell.v : null; }
+function fval(cell) { return cell && cell.f ? cell.f : (cell && cell.v != null ? parseFloat(cell.v).toFixed(3) : null); }
+function fmt(n) { return parseFloat(n).toFixed(3); }
+
+function parse1F(json) {
+    const rows = json.table.rows;
+    const result = { carts: {}, portableRacks: [], techRoom: [] };
+    let section = 'carts';
+
+    for (const row of rows) {
+        const c = row.c;
+        const a = val(c[0]);
+        if (!a) continue;
+
+        if (a.includes('PORTABLE RACKS')) { section = 'portable'; continue; }
+        if (a.includes('TECH ROOM')) { section = 'tech'; continue; }
+        if (a === 'Location' || a === 'Group') continue;
+
+        if (section === 'carts') {
+            const freq = fval(c[2]);
+            if (!freq) continue;
+            const txNum = c[1] ? c[1].f || String(Math.round(c[1].v)) : null;
+            let txLabel; if (a === 'Midas Cart') { if (!result.carts[a]) result.carts[a] = []; txLabel = 'TX M' + (result.carts[a].length + 1); } else { txLabel = txNum ? 'TX ' + txNum : 'TX'; }
+            if (!result.carts[a]) result.carts[a] = [];
+            result.carts[a].push({ tx: txLabel, freq: freq });
+        } else if (section === 'portable') {
+            const freq = fval(c[1]);
+            if (freq) result.portableRacks.push({ name: a, freq: freq });
+        } else if (section === 'tech') {
+            const freq = fval(c[1]);
+            if (freq) result.techRoom.push({ name: a, freq: freq });
+        }
+    }
+    return result;
+}
+
+function parse2F(json) {
+    const rows = json.table.rows;
+    const result = { groups: {} };
+    for (const row of rows) {
+        const c = row.c;
+        const group = val(c[0]);
+        const freq = fval(c[2]);
+        if (!group || !freq) continue;
+        const txNum = c[1] ? Math.round(c[1].v) : null;
+        if (!txNum) continue;
+        if (!result.groups[group]) result.groups[group] = [];
+        result.groups[group].push({ tx: 'TX ' + txNum, freq: freq });
+    }
+    return result;
+}
+
+function deriveQuickRef1F(f1) {
+    const ewd = [], g4 = [];
+    for (const c in f1.carts) f1.carts[c].forEach(t => ewd.push(parseFloat(t.freq)));
+    f1.portableRacks.forEach(r => g4.push(parseFloat(r.freq)));
+    f1.techRoom.forEach(t => g4.push(parseFloat(t.freq)));
+    ewd.sort((a,b)=>a-b); g4.sort((a,b)=>a-b);
+    return { ewd: ewd.map(fmt), g4: g4.map(fmt) };
+}
+
+function deriveQuickRef2F(f2) {
+    const freqs = [];
+    for (const g in f2.groups) f2.groups[g].forEach(t => freqs.push(parseFloat(t.freq)));
+    freqs.sort((a,b)=>a-b);
+    return freqs.map(fmt);
+}
+
+function calcBands(f1, f2) {
+    const cF=[], rF=[], tF=[], f2F=[];
+    for (const c in f1.carts) f1.carts[c].forEach(t => cF.push(parseFloat(t.freq)));
+    f1.portableRacks.forEach(r => rF.push(parseFloat(r.freq)));
+    f1.techRoom.forEach(t => tF.push(parseFloat(t.freq)));
+    for (const g in f2.groups) f2.groups[g].forEach(t => f2F.push(parseFloat(t.freq)));
+    const rng = a => ({ min:fmt(Math.min(...a)), max:fmt(Math.max(...a)), count:a.length });
+    return { carts:rng(cF), portableRacks:rng(rF), techRoom:rng(tF), floor2:rng(f2F) };
+}
+
+const cartColors = {'Cart 1':'cart-1','Cart 2':'cart-2','Cart 3':'cart-3','Cart 4':'cart-4','Cart 5':'cart-5','Cart 6':'cart-6','Cart 7':'cart-7','Midas Cart':'cart-midas midas'};
+const cartOrder = ['Cart 1','Cart 2','Cart 3','Cart 4','Cart 5','Cart 6','Cart 7','Midas Cart'];
+const groupOrder = ['TX 1\u20134','TX 5\u20138','TX 9\u201312','TX 13\u201316','TX 17\u201320','TX 21\u201324','TX 25\u201328'];
+
+function render(f1, f2) {
+    const qr1 = deriveQuickRef1F(f1);
+    const qr2 = deriveQuickRef2F(f2);
+    const br = calcBands(f1, f2);
+    const now = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    document.getElementById('detailed').innerHTML = `
+        <div class="header"><div><h1>WIRELESS FREQUENCY CHART<span class="floor-badge">1ST FLOOR</span></h1><div class="subtitle">Clarion Hotel The Hub — Conference & Events</div></div><div class="note">All frequencies in MHz<br>Live from spreadsheet</div></div>
+        <div class="cart-section"><div class="section-header">CART TRANSMITTERS<span class="system-badge badge-ewd">Sennheiser EW-D</span></div>
+        <div class="cart-grid">${cartOrder.map(name => { const cart = f1.carts[name]; if(!cart) return ''; return `<div class="cart-box ${cartColors[name]}"><h3>${name}</h3><div class="transmitters">${cart.map(t=>`<div class="tx"><div class="tx-label">${t.tx}</div><div class="tx-freq">${t.freq}</div></div>`).join('')}</div></div>`; }).join('')}</div></div>
+        <div class="two-col"><div><div class="col-header"><div class="section-header orange">PORTABLE RACKS<span class="system-badge badge-g4">Sennheiser ew G4</span></div></div><div class="info-box orange-bg">${f1.portableRacks.map(r=>`<div class="info-row"><span class="label">${r.name}</span><span class="freq">${r.freq} MHz</span></div>`).join('')}</div></div>
+        <div><div class="col-header"><div class="section-header teal">TECH ROOM<span class="system-badge badge-g4">Sennheiser ew G4</span></div></div><div class="info-box teal-bg">${f1.techRoom.map(t=>`<div class="info-row"><span class="label">${t.name}</span><span class="freq">${t.freq} MHz</span></div>`).join('')}</div></div></div>
+        <div class="band-section"><div class="section-header gray">FREQUENCY BANDS AT A GLANCE</div><div class="band-grid">
+        <div class="band-box blue"><h4>CART SYSTEMS</h4><div class="range">${br.carts.min} – ${br.carts.max} MHz</div><div class="desc">Carts 1–7 + Midas (${br.carts.count} ch)</div></div>
+        <div class="band-box orange"><h4>PORTABLE RACKS</h4><div class="range">${br.portableRacks.min} – ${br.portableRacks.max} MHz</div><div class="desc">${br.portableRacks.count} channels</div></div>
+        <div class="band-box teal"><h4>TECH ROOM</h4><div class="range">${br.techRoom.min} – ${br.techRoom.max} MHz</div><div class="desc">${br.techRoom.count} channels</div></div>
+        </div></div><div class="footer">Rev. ${now} — Data live from Google Sheets</div>`;
+
+    document.getElementById('quick').innerHTML = `
+        <div class="quick-ref-header"><h1>1ST FLOOR — FREQUENCIES IN USE</h1><div class="subtitle">Clarion Hotel The Hub — Avoid these frequencies when coordinating</div></div>
+        <div class="freq-columns"><div class="freq-column"><h3>EW-D Systems (${qr1.ewd.length} ch)</h3><div class="system-note">Carts 1–7 + Midas Cart</div><ul class="freq-list">${qr1.ewd.map(f=>`<li>${f} MHz</li>`).join('')}</ul></div>
+        <div class="freq-column"><h3>ew G4 Systems (${qr1.g4.length} ch)</h3><div class="system-note">Portable Racks + Tech Room</div><ul class="freq-list">${qr1.g4.map(f=>`<li>${f} MHz</li>`).join('')}</ul></div></div>
+        <div class="footer">Rev. ${now}</div>`;
+
+    document.getElementById('detailed2f').innerHTML = `
+        <div class="header" style="background:#065f46;"><div><h1>WIRELESS FREQUENCY CHART<span class="floor-badge" style="background:#10b981;">2ND FLOOR</span></h1><div class="subtitle">Jernbanetorget</div></div><div class="note">All frequencies in MHz<br>Live from spreadsheet</div></div>
+        <div class="cart-section"><div class="section-header" style="background:#065f46;">JERNBANETORGET TRANSMITTERS<span class="system-badge badge-ewd">Sennheiser EW-DX</span></div>
+        <div class="floor-2f-row">${groupOrder.map(name => { const group = f2.groups[name]; if(!group) return ''; return `<div class="floor-2f-box"><h3>${name}</h3><div class="transmitters">${group.map(t=>`<div class="tx"><div class="tx-label">${t.tx}</div><div class="tx-freq">${t.freq}</div></div>`).join('')}</div></div>`; }).join('')}</div></div>
+        <div class="band-section"><div class="section-header gray">FREQUENCY BAND</div><div class="band-box blue" style="max-width:250px;"><h4>JERNBANETORGET</h4><div class="range">${br.floor2.min} – ${br.floor2.max} MHz</div><div class="desc">${br.floor2.count} channels — EW-DX</div></div></div>
+        <div class="footer">Rev. ${now}</div>`;
+
+    const half = Math.ceil(qr2.length / 2);
+    document.getElementById('quick2f').innerHTML = `
+        <div class="quick-ref-header" style="background:#065f46;"><h1>2ND FLOOR — FREQUENCIES IN USE</h1><div class="subtitle">Jernbanetorget — Avoid these frequencies when coordinating</div></div>
+        <div class="freq-columns"><div class="freq-column"><h3 style="border-color:#065f46;">EW-DX System (1–${half})</h3><div class="system-note">Jernbanetorget</div><ul class="freq-list">${qr2.slice(0,half).map(f=>`<li>${f} MHz</li>`).join('')}</ul></div>
+        <div class="freq-column"><h3 style="border-color:#065f46;">EW-DX System (${half+1}–${qr2.length})</h3><div class="system-note">Jernbanetorget</div><ul class="freq-list">${qr2.slice(half).map(f=>`<li>${f} MHz</li>`).join('')}</ul></div></div>
+        <div class="footer">Rev. ${now}</div>`;
+}
+
+function showTab(btn, tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+Promise.all([fetchSheet('1F Detailed'), fetchSheet('2F Detailed')])
+    .then(([j1, j2]) => render(parse1F(j1), parse2F(j2)))
+    .catch(err => {
+        document.getElementById('detailed').innerHTML = `<div class="error">Failed to load frequency data: ${err.message}<br><br>Check internet connection or <a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}">open spreadsheet directly</a></div>`;
+    });
+</script>
+</body>
+</html>

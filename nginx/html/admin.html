@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Tech - Admin Console</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f; --bg-card: #12121a; --bg-hover: #1a1a25;
+            --border: #2a2a38; --text: #f0f0f5; --text-dim: #8888a0;
+            --accent: #4a9eff; --accent-glow: rgba(74, 158, 255, 0.15);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-dark); color: var(--text); min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        header { text-align: center; padding: 60px 24px 40px; background: linear-gradient(180deg, #101018 0%, var(--bg-dark) 100%); }
+        .back-link { display: inline-block; color: var(--text-dim); text-decoration: none; font-size: 13px; margin-bottom: 24px; }
+        .back-link:hover { color: var(--accent); }
+        .hotel-name { font-size: 11px; letter-spacing: 6px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 16px; }
+        h1 { font-size: 48px; font-weight: 200; letter-spacing: -1px; margin-bottom: 12px; }
+        h1 span { font-weight: 600; background: linear-gradient(135deg, var(--accent), #7dd3fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .subtitle { color: var(--text-dim); font-size: 16px; }
+        main { flex: 1; padding: 20px 24px 60px; max-width: 1100px; margin: 0 auto; width: 100%; }
+        .section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; margin-bottom: 24px; }
+        .section h2 { font-size: 12px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .card { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-decoration: none; transition: all 0.25s ease; display: block; }
+        a.card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 40px var(--accent-glow); }
+        .card-title { color: var(--text); font-weight: 600; margin-bottom: 6px; font-size: 15px; }
+        .card-desc { color: var(--text-dim); font-size: 13px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        th { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+        td { color: var(--text); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        code { background: rgba(74,158,255,0.1); padding: 3px 8px; border-radius: 6px; font-family: "SF Mono", Monaco, monospace; font-size: 13px; color: var(--accent); border: 1px solid var(--border); }
+        pre { background: var(--bg-dark); border: 1px solid var(--border); padding: 20px; border-radius: 12px; overflow-x: auto; font-family: "SF Mono", Monaco, monospace; font-size: 13px; line-height: 1.6; color: var(--text); }
+        pre code { background: none; padding: 0; border: none; color: var(--text); }
+        .comment { color: var(--text-dim); }
+        p.info { color: var(--text-dim); margin-bottom: 16px; font-size: 14px; line-height: 1.6; }
+        p.info a { color: var(--accent); text-decoration: none; }
+        p.info a:hover { text-decoration: underline; }
+        footer { text-align: center; padding: 32px 24px; color: var(--text-dim); font-size: 13px; border-top: 1px solid var(--border); }
+        footer strong { color: var(--text); font-weight: 500; }
+        @media (max-width: 600px) { header { padding: 40px 20px 30px; } h1 { font-size: 32px; } .section { padding: 20px; } }
+    </style>
+</head>
+<body>
+    <header>
+        <a target="_blank" href="/" class="back-link">&larr; tech.thehub</a>
+        <div class="hotel-name">Clarion Hotel The Hub</div>
+        <h1>Internal <span>Tools</span></h1>
+    </header>
+    <main>
+        <div class="section">
+            <h2>Tech Tools</h2>
+            <div class="grid">
+                <a target="_blank" href="/schedule/" class="card">
+                    <div class="card-title">Tech Schedule</div>
+                    <div class="card-desc">Daily event and room schedule</div>
+                </a>
+                <a target="_blank" href="/crestron/" class="card">
+                    <div class="card-title">Crestron Meeting Rooms</div>
+                    <div class="card-desc">CIP control for all 15 meeting rooms</div>
+                </a>
+                <a target="_blank" href="/crestron/jernbanetorget.html" class="card">
+                    <div class="card-title">Jernbanetorget Control</div>
+                    <div class="card-desc">Screens, curtains, hoists, boxes</div>
+                </a>
+                <a target="_blank" href="/direct/" class="card">
+                    <div class="card-title">Direct Device Control</div>
+                    <div class="card-desc">Bypass Crestron — Samsung, Helvar, CueCore, elevator</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Admin</h2>
+            <div class="grid">
+                <a target="_blank" href="/portainer/" class="card">
+                    <div class="card-title">Portainer</div>
+                    <div class="card-desc">Docker container management</div>
+                </a>
+                <a target="_blank" href="/docs/" class="card">
+                    <div class="card-title">Documentation</div>
+                    <div class="card-desc">System and equipment docs</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Service URLs</h2>
+            <table>
+                <tr><th>Service</th><th>Subdomain</th><th>Path</th></tr>
+                <tr><td>Landing Page</td><td><code>tech.hub</code></td><td><code>/</code></td></tr>
+                <tr><td>Lighting Control</td><td><code>lighting.tech.hub</code></td><td><code>/lighting/</code></td></tr>
+                <tr><td>LED Wall</td><td><code>mx6000.tech.hub</code></td><td><code>/mx6000/</code></td></tr>
+                <tr><td>Chandelier Control</td><td><code>chandelier.tech.thehub</code></td><td>&mdash;</td></tr>
+                <tr><td>Tech Schedule</td><td><code>schedule.tech.hub</code></td><td><code>/schedule/</code></td></tr>
+                <tr><td>Reference Tools</td><td><code>tools.tech.hub</code></td><td><code>/tools/</code></td></tr>
+                <tr><td>Documentation</td><td><code>docs.tech.hub</code></td><td><code>/docs/</code></td></tr>
+                <tr><td>Portainer</td><td>&mdash;</td><td><code>/portainer/</code></td></tr>
+                <tr><td>Admin (this page)</td><td><code>admin.tech.hub</code></td><td><code>/admin.html</code></td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Platform</h2>
+            <table>
+                <tr><th>Item</th><th>Value</th></tr>
+                <tr><td>Host</td><td>Raspberry Pi 5 &mdash; <code>rpi5-1</code></td></tr>
+                <tr><td>LAN IP</td><td><code>10.0.81.231</code> (Bright Wi-Fi)</td></tr>
+                <tr><td>Tailscale IP</td><td><code>100.98.118.40</code></td></tr>
+                <tr><td>DNS</td><td>dnsmasq on host &mdash; <code>*.hub &rarr; 10.0.81.231</code></td></tr>
+                <tr><td>Docker</td><td>Docker Engine (not Desktop)</td></tr>
+                <tr><td>Project</td><td><code>/home/thehub/hub-control-center/</code></td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Equipment IPs</h2>
+            <table>
+                <tr><th>Device</th><th>IP Address</th><th>Port</th><th>Protocol</th></tr>
+                <tr><td>MX6000 LED Processor</td><td><code>10.0.81.207</code></td><td>8001</td><td>HTTP API</td></tr>
+                <tr><td>Luminex (sACN)</td><td><code>10.0.80.98</code></td><td>5568</td><td>UDP/sACN</td></tr>
+                <tr><td>CueCore A (Sal A)</td><td><code>10.0.80.95</code></td><td>7000</td><td>UDP</td></tr>
+                <tr><td>CueCore B (Sal B)</td><td><code>10.0.80.96</code></td><td>7000</td><td>UDP</td></tr>
+                <tr><td>CueCore C (Sal C)</td><td><code>10.0.80.97</code></td><td>7000</td><td>UDP</td></tr>
+                <tr><td>Crestron CP2</td><td><code>10.0.80.71</code></td><td>41794</td><td>TCP/CIP</td></tr>
+                <tr><td>Crestron CP1</td><td><code>10.0.80.51</code></td><td>41794</td><td>TCP/CIP</td></tr>
+                <tr><td>Crestron CP4</td><td><code>10.0.80.221</code></td><td>41794</td><td>TCP/CIP</td></tr>
+                <tr><td>Yamaha MRX7-D (Jern)</td><td><code>10.0.83.21</code></td><td>49280</td><td>TCP</td></tr>
+                <tr><td>Arduino Yun (TOTB)</td><td><code>10.0.80.193</code></td><td>1023</td><td>TCP</td></tr>
+                <tr><td>Mac Studio</td><td><code>10.0.81.223</code></td><td>&mdash;</td><td>Legacy host</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>SSH Access</h2>
+            <pre><span class="comment"># Pi 5 (this server)</span>
+ssh thehub@10.0.81.231      <span class="comment"># LAN</span>
+ssh thehub@100.98.118.40    <span class="comment"># Tailscale</span>
+Password: 0155
+
+<span class="comment"># Mac Studio (legacy)</span>
+ssh thehub@10.0.81.223
+Password: 0155</pre>
+        </div>
+
+        <div class="section">
+            <h2>Docker Commands</h2>
+            <pre><span class="comment"># View running containers</span>
+docker ps
+
+<span class="comment"># View logs</span>
+docker logs -f lighting-controller
+
+<span class="comment"># Restart a service</span>
+cd ~/hub-control-center
+docker compose restart lighting-controller
+
+<span class="comment"># Rebuild after code changes</span>
+docker compose up -d --build
+
+<span class="comment"># Restart Crestron Slot 9 (TOTB elevator fix)</span>
+<span class="comment"># Requires Crestron Toolbox or SSH to CP2</span></pre>
+        </div>
+
+        <div class="section">
+            <h2>Troubleshooting</h2>
+            <table>
+                <tr><th>Problem</th><th>Solution</th></tr>
+                <tr><td>*.hub not resolving</td><td>Check dnsmasq: <code>sudo systemctl status dnsmasq</code><br>Verify: <code>dig @10.0.81.231 tech.hub</code></td></tr>
+                <tr><td>TOTB elevator broken via Crestron</td><td>Restart Slot 9 on CP2: <code>PROGRESET -P:9</code> via Crestron Toolbox</td></tr>
+                <tr><td>Lighting not responding</td><td>Check Luminex/CueCore connectivity from Pi's WiFi</td></tr>
+                <tr><td>LED wall not responding</td><td>Check MX6000 at 10.0.81.207:8001</td></tr>
+            </table>
+        </div>
+    </main>
+    <footer>
+        <p><strong>Clarion Hotel The Hub</strong> &middot; Oslo &middot; Running on Raspberry Pi 5</p>
+    </footer>
+</body>
+</html>

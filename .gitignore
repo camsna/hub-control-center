@@ -1,0 +1,18 @@
+# Backups (git tracks history; these duplicate)
+*.bak
+*.bak.*
+
+# Secrets
+nginx/htpasswd
+
+# Schedule data — browser session auth + scraped events
+services/schedule/data/
+
+# Runtime
+logs/
+*.log
+*.tmp
+
+# OS cruft
+.DS_Store
+Thumbs.db

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clarion Hotel The Hub - Lighting Reference</title>
+    <style>
+        @page { size: A4 portrait; margin: 12mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Arial', sans-serif; background: #fff; padding: 15px; font-size: 11px; }
+        .header { text-align: center; margin-bottom: 15px; border-bottom: 3px solid #000; padding-bottom: 10px; }
+        .header h1 { font-size: 18px; font-weight: bold; }
+        .header .updated { font-size: 10px; color: #666; margin-top: 4px; }
+        .tab-nav { display: flex; border-bottom: 2px solid #000; margin-bottom: 15px; align-items: center; }
+        .tab-btn { padding: 10px 20px; font-size: 13px; font-weight: bold; background: #eee; border: 2px solid #000; border-bottom: none; cursor: pointer; margin-right: 4px; border-radius: 6px 6px 0 0; }
+        .tab-btn.active { background: #fff; position: relative; top: 2px; }
+        .tab-btn:hover { background: #ddd; }
+        .tab-btn.active:hover { background: #fff; }
+        .print-btn { margin-left: auto; padding: 6px 12px; font-size: 11px; background: #333; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
+        .print-btn:hover { background: #555; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .room-section { margin-bottom: 20px; }
+        .room-header { background: #000; color: white; padding: 6px 12px; font-size: 14px; font-weight: bold; margin-bottom: 12px; }
+        .stage { background: #333; color: white; text-align: center; padding: 10px; margin-bottom: 15px; font-size: 16px; font-weight: bold; letter-spacing: 4px; border: 2px solid #000; }
+        .truss-row { display: flex; align-items: flex-start; margin-bottom: 12px; }
+        .truss-label { width: 30px; height: 30px; border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 10px; flex-shrink: 0; }
+        .truss-content { flex: 1; }
+        .truss-meta { font-size: 10px; margin-bottom: 5px; color: #333; }
+        .truss-meta .line { font-weight: bold; color: #c00; }
+        .truss-meta .universe-tag { font-weight: bold; color: #006; background: #e6f0ff; padding: 1px 4px; margin-left: 2px; }
+        .truss-meta .open { color: #666; }
+        .fixture-strip { display: flex; border: 2px solid #000; background: #fff; width: 100%; }
+        .fixture-cell { flex: 1; border-right: 1px solid #000; padding: 6px 4px; text-align: center; min-width: 0; }
+        .fixture-cell:last-child { border-right: none; }
+        .fixture-cell.quantum { background: #ffe6e6; }
+        .fixture-cell.aura { background: #fff0e6; }
+        .fixture-cell.xbar { background: #e6ffe6; }
+        .fixture-cell.xled { background: #e6f0ff; }
+        .fixture-cell.fresnel { background: #fff9e6; }
+        .fixture-cell.spot { background: #f0e6ff; }
+        .fixture-cell.taklys { background: #f5f5f5; }
+        .fixture-cell.kreios { background: #ffe8d6; }
+        .fixture-cell.vegg { background: #d6f5e8; }
+        .fixture-cell.orbit { background: #e8d6f5; }
+        .fixture-cell .addr { font-weight: bold; font-size: 12px; }
+        .fixture-cell .name { font-size: 8px; color: #666; }
+        .house-section { margin-bottom: 18px; }
+        .house-group { margin-bottom: 12px; }
+        .house-group-header { font-size: 11px; font-weight: bold; margin-bottom: 6px; color: #333; display: flex; align-items: center; }
+        .house-group-header .universe-tag { font-weight: bold; color: #006; background: #e6f0ff; padding: 1px 4px; margin-left: 6px; font-size: 10px; }
+        .range-box { border: 2px solid #000; padding: 8px 12px; background: #f5f5f5; display: inline-block; margin-right: 10px; margin-bottom: 8px; }
+        .range-box.vegg { background: #d6f5e8; }
+        .range-box.orbit { background: #e8d6f5; }
+        .range-box .range { font-weight: bold; font-size: 13px; }
+        .range-box .desc { font-size: 9px; color: #666; }
+        .house-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+        .house-table th, .house-table td { border: 2px solid #000; padding: 8px 10px; text-align: left; vertical-align: top; }
+        .house-table thead th { background: #000; color: #fff; font-size: 13px; text-align: center; }
+        .house-table .u-tag { background: #333; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px; }
+        .house-table .fixture-label { background: #f5f5f5; }
+        .house-table .fixture-desc { font-size: 9px; color: #666; font-weight: normal; }
+        .house-table .addr-cell { font-family: monospace; font-size: 12px; text-align: center; }
+        .house-table .kreios-row td { background: #fffaf5; }
+        .house-table .kreios-row .fixture-label { background: #ffe8d6; }
+        .house-table .vegg-row td { background: #f5fff8; }
+        .house-table .vegg-row .fixture-label { background: #d6f5e8; }
+        .house-table .orbit-row td { background: #faf5ff; }
+        .house-table .orbit-row .fixture-label { background: #e8d6f5; }
+        .orbit-map-section { margin: 20px 0; padding: 15px; border: 2px solid #000; background: #faf8fc; }
+        .orbit-map-section h3 { margin: 0 0 8px 0; font-size: 13px; }
+        .orbit-intro { font-size: 10px; margin-bottom: 12px; color: #333; }
+        .orbit-maps-container { display: flex; gap: 15px; }
+        .orbit-map-block { flex: 1; border: 1px solid #999; background: #fff; }
+        .orbit-map-header { background: #e8d6f5; padding: 6px 10px; font-weight: bold; font-size: 10px; border-bottom: 1px solid #999; }
+        .orbit-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        .orbit-table th, .orbit-table td { border: 1px solid #ccc; padding: 3px 4px; text-align: center; }
+        .orbit-table th { background: #f0e6ff; font-size: 8px; }
+        .orbit-table td.highlight { background: #fff0f0; font-weight: bold; }
+        .orbit-legend { margin-top: 10px; font-size: 9px; color: #444; }
+        .orbit-legend ul { margin: 4px 0 0 16px; }
+        .orbit-legend li { margin-bottom: 2px; }
+        .orbit-legend .critical { color: #c00; font-weight: bold; }
+        .bottom-sections { margin-top: 20px; padding-top: 15px; border-top: 2px solid #000; }
+        .bottom-sections h3 { font-size: 12px; margin-bottom: 8px; }
+        .dmx-table, .fixture-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 15px; }
+        .dmx-table th, .dmx-table td, .fixture-table th, .fixture-table td { border: 1px solid #000; padding: 4px 8px; text-align: left; }
+        .dmx-table th, .fixture-table th { background: #eee; font-weight: bold; }
+        .fixture-table .color-cell { width: 20px; padding: 4px; }
+        .tab-title { display: none; }
+        /* ====== DARK THEME (screen only) ====== */
+        @media screen {
+            body { background: #0a0a0f; color: #f0f0f5; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; padding: 20px; }
+            .header { border-bottom-color: #2a2a38; margin-bottom: 20px; padding-bottom: 16px; }
+            .header h1 { font-size: 20px; font-weight: 600; color: #f0f0f5; }
+            .header .updated { color: #8888a0; }
+            .tab-nav { border-bottom-color: #2a2a38; margin-bottom: 20px; }
+            .tab-btn { background: #12121a; color: #8888a0; border-color: #2a2a38; font-size: 12px; padding: 8px 16px; }
+            .tab-btn.active { background: #0a0a0f; color: #4a9eff; border-color: #4a9eff; border-bottom-color: #0a0a0f; }
+            .tab-btn:hover { background: #1a1a25; color: #f0f0f5; }
+            .tab-btn.active:hover { background: #0a0a0f; }
+            .print-btn { background: #2a2a38; color: #8888a0; border: 1px solid #3a3a42; }
+            .print-btn:hover { background: #3a3a42; color: #f0f0f5; }
+            .room-header { background: #4a9eff; color: #fff; border-radius: 6px; }
+            .stage { background: #1a1a25; color: #8888a0; border-color: #2a2a38; border-radius: 6px; }
+            .truss-label { border-color: #4a9eff; color: #4a9eff; }
+            .truss-meta { color: #8888a0; }
+            .truss-meta .line { color: #ff6b6b; }
+            .truss-meta .universe-tag { color: #4a9eff; background: rgba(74, 158, 255, 0.15); }
+            .truss-meta .open { color: #5a5a6a; }
+            .fixture-strip { border-color: #2a2a38; background: #12121a; }
+            .fixture-cell { border-right-color: #2a2a38; }
+            .fixture-cell .addr { color: #f0f0f5; }
+            .fixture-cell .name { color: #6a6a7a; }
+            .fixture-cell.quantum { background: rgba(255, 100, 100, 0.1); }
+            .fixture-cell.aura { background: rgba(255, 160, 80, 0.1); }
+            .fixture-cell.xbar { background: rgba(80, 220, 100, 0.1); }
+            .fixture-cell.xled { background: rgba(80, 150, 255, 0.1); }
+            .fixture-cell.fresnel { background: rgba(255, 220, 80, 0.1); }
+            .fixture-cell.spot { background: rgba(180, 100, 255, 0.1); }
+            .fixture-cell.taklys { background: rgba(150, 150, 150, 0.08); }
+            .fixture-cell.kreios { background: rgba(255, 180, 120, 0.1); }
+            .fixture-cell.vegg { background: rgba(80, 220, 160, 0.1); }
+            .fixture-cell.orbit { background: rgba(180, 120, 255, 0.1); }
+            .house-group-header { color: #f0f0f5; }
+            .house-group-header .universe-tag { color: #4a9eff; background: rgba(74, 158, 255, 0.15); }
+            .range-box { border-color: #2a2a38; background: #12121a; }
+            .range-box .range { color: #f0f0f5; }
+            .range-box .desc { color: #8888a0; }
+            .range-box.vegg { background: rgba(80, 220, 160, 0.08); border-color: rgba(80, 220, 160, 0.2); }
+            .range-box.orbit { background: rgba(180, 120, 255, 0.08); border-color: rgba(180, 120, 255, 0.2); }
+            .house-table th, .house-table td { border-color: #2a2a38; color: #f0f0f5; }
+            .house-table thead th { background: #1a1a25; color: #4a9eff; }
+            .house-table .u-tag { background: rgba(74, 158, 255, 0.2); }
+            .house-table .fixture-label { background: #12121a; }
+            .house-table .fixture-desc { color: #6a6a7a; }
+            .house-table .addr-cell { color: #f0f0f5; }
+            .house-table .kreios-row td { background: rgba(255, 180, 120, 0.05); }
+            .house-table .kreios-row .fixture-label { background: rgba(255, 180, 120, 0.1); }
+            .house-table .vegg-row td { background: rgba(80, 220, 160, 0.05); }
+            .house-table .vegg-row .fixture-label { background: rgba(80, 220, 160, 0.1); }
+            .house-table .orbit-row td { background: rgba(180, 120, 255, 0.05); }
+            .house-table .orbit-row .fixture-label { background: rgba(180, 120, 255, 0.1); }
+            .orbit-map-section { border-color: #2a2a38; background: #0f0f15; }
+            .orbit-map-section h3 { color: #f0f0f5; }
+            .orbit-intro { color: #8888a0; }
+            .orbit-map-block { border-color: #2a2a38; background: #12121a; }
+            .orbit-map-header { background: rgba(180, 120, 255, 0.15); color: #f0f0f5; border-bottom-color: #2a2a38; }
+            .orbit-table th, .orbit-table td { border-color: #2a2a38; color: #f0f0f5; }
+            .orbit-table th { background: rgba(180, 120, 255, 0.1); }
+            .orbit-table td.highlight { background: rgba(255, 80, 80, 0.1); }
+            .orbit-legend { color: #8888a0; }
+            .orbit-legend .critical { color: #ff6b6b; }
+            .bottom-sections { border-top-color: #2a2a38; }
+            .bottom-sections h3 { color: #f0f0f5; }
+            .dmx-table th, .dmx-table td, .fixture-table th, .fixture-table td { border-color: #2a2a38; color: #f0f0f5; }
+            .dmx-table th, .fixture-table th { background: #1a1a25; }
+        }
+        @media print {
+            html, body { height: 100%; }
+            body { padding: 0; font-size: 10px; display: flex; flex-direction: column; min-height: 100%; }
+            .header { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #000; }
+            .header h1 { font-size: 16px; }
+            .tab-nav { display: none !important; }
+            .tab-content { display: none !important; }
+            .tab-title { display: block; font-size: 14px; font-weight: bold; margin-bottom: 12px; padding: 6px 10px; background: #eee; border: 1px solid #000; }
+            body.print-truss #truss { display: block !important; }
+            body.print-house #house { display: block !important; }
+            .room-section { margin-bottom: 14px; }
+            .room-header { padding: 4px 10px; font-size: 12px; margin-bottom: 8px; }
+            .stage { padding: 6px; margin-bottom: 10px; font-size: 14px; letter-spacing: 3px; }
+            .truss-row { margin-bottom: 8px; }
+            .truss-label { width: 24px; height: 24px; font-size: 12px; margin-right: 8px; }
+            .truss-meta { font-size: 9px; margin-bottom: 3px; color: #000; }
+            .truss-meta .line { color: #000 !important; }
+            .truss-meta .universe-tag { color: #000 !important; background: #ddd; }
+            .truss-meta .open { color: #000 !important; }
+            .house-group-header { color: #000; }
+            .house-group-header .universe-tag { color: #000 !important; background: #ddd; }
+            .fixture-cell { padding: 4px 2px; }
+            .fixture-cell .addr { font-size: 10px; color: #000; }
+            .fixture-cell .name { font-size: 7px; color: #000 !important; }
+            .range-box .desc { color: #000 !important; }
+            .fixture-cell.quantum, .fixture-cell.aura, .fixture-cell.xbar, .fixture-cell.xled, .fixture-cell.fresnel, .fixture-cell.spot, .fixture-cell.taklys, .fixture-cell.kreios, .fixture-cell.vegg, .fixture-cell.orbit { background: #fff !important; }
+            .range-box, .range-box.vegg, .range-box.orbit { background: #fff !important; }
+            .house-table th, .house-table td { background: #fff !important; border: 1px solid #000 !important; }
+            .house-table thead th { background: #000 !important; color: #fff !important; }
+            .house-table .fixture-label, .house-table .kreios-row .fixture-label, .house-table .vegg-row .fixture-label, .house-table .orbit-row .fixture-label { background: #eee !important; }
+            .house-table .kreios-row td, .house-table .vegg-row td, .house-table .orbit-row td { background: #fff !important; }
+            .house-table .fixture-desc { color: #000 !important; }
+            .orbit-map-section { background: #fff !important; border: 1px solid #000 !important; }
+            .orbit-intro { color: #000 !important; }
+            .orbit-map-header { background: #ddd !important; }
+            .orbit-table th { background: #eee !important; }
+            .orbit-legend { color: #000 !important; }
+            .bottom-sections { margin-top: auto; padding-top: 10px; }
+            .bottom-sections h3 { font-size: 11px; margin-bottom: 6px; }
+            .dmx-table, .fixture-table { font-size: 9px; margin-bottom: 10px; }
+            .dmx-table th, .dmx-table td, .fixture-table th, .fixture-table td { padding: 3px 6px; }
+            .dmx-table th, .fixture-table th { background: #ddd !important; }
+            .fixture-table .color-cell { background: #fff !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CLARION HOTEL THE HUB — LIGHTING REFERENCE</h1>
+        <div class="updated">Updated: 2026-03-05</div>
+    </div>
+
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="showTab('truss')">Truss Fixtures (U1–U4)</button>
+        <button class="tab-btn" onclick="showTab('house')">House Lights (U6–U8)</button>
+        <button class="print-btn" onclick="printCurrentTab()">Print This Tab</button>
+        <select class="print-btn" onchange="if(this.value){exportPatch(this.value);this.selectedIndex=0;}" style="margin-left:4px;cursor:pointer;">
+            <option value="">Export Patchlist...</option>
+            <option value="csv">CSV</option>
+            <option value="xlsx">Excel</option>
+        </select>
+    </div>
+
+    <!-- TAB 1: TRUSS FIXTURES -->
+    <div id="truss" class="tab-content active">
+        <div class="tab-title">TRUSS FIXTURES — UNIVERSES 1–4</div>
+        <div class="room-section">
+            <div class="room-header">SAL A</div>
+            <div class="stage">STAGE</div>
+            <div class="truss-row">
+                <div class="truss-label">P</div>
+                <div class="truss-content">
+                    <div class="truss-meta">PIPE — DMX <span class="line">31</span><span class="universe-tag">U4</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell aura"><div class="addr">4.029</div><div class="name">Aura 1</div></div>
+                        <div class="fixture-cell aura"><div class="addr">4.015</div><div class="name">Aura 2</div></div>
+                        <div class="fixture-cell aura"><div class="addr">4.001</div><div class="name">Aura 3</div></div>
+                        <div class="fixture-cell aura"><div class="addr">4.043</div><div class="name">Aura 4</div></div>
+                        <div class="fixture-cell aura"><div class="addr">4.057</div><div class="name">Aura 5</div></div>
+                        <div class="fixture-cell aura"><div class="addr">4.071</div><div class="name">Aura 6</div></div>
+                        <div class="fixture-cell aura"><div class="addr">4.085</div><div class="name">Aura 7</div></div>
+                        <div class="fixture-cell aura"><div class="addr">4.099</div><div class="name">Aura 8</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="truss-row">
+                <div class="truss-label">1</div>
+                <div class="truss-content">
+                    <div class="truss-meta">TRUSS 1 — DMX <span class="line">17</span><span class="universe-tag">U2</span> <span class="open">(DMX 18 open)</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell quantum"><div class="addr">2.029</div><div class="name">Q1</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.100</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.132</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.164</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.196</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.228</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.260</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.292</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.324</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.356</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.388</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.420</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell xbar"><div class="addr">2.452</div><div class="name">XBAR</div></div>
+                        <div class="fixture-cell quantum"><div class="addr">2.056</div><div class="name">Q2</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="truss-row">
+                <div class="truss-label">2</div>
+                <div class="truss-content">
+                    <div class="truss-meta">TRUSS 2 — DMX <span class="line">21</span><span class="universe-tag">U1</span> <span class="open">(DMX 22 open)</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell fresnel"><div class="addr">1.013</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.043</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.001</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.007</div><div class="name">Fr</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="truss-row">
+                <div class="truss-label">3</div>
+                <div class="truss-content">
+                    <div class="truss-meta">TRUSS 3 — DMX <span class="line">23</span><span class="universe-tag">U1</span> <span class="open">(DMX 24 open)</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell spot"><div class="addr">1.101</div><div class="name">Spot</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.067</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.037</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.031</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell spot"><div class="addr">1.109</div><div class="name">Spot</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.073</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.049</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell spot"><div class="addr">1.105</div><div class="name">Spot</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.055</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.061</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell fresnel"><div class="addr">1.025</div><div class="name">Fr</div></div>
+                        <div class="fixture-cell spot"><div class="addr">1.113</div><div class="name">Spot</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="room-section">
+            <div class="room-header">SAL B</div>
+            <div class="truss-row">
+                <div class="truss-label">4</div>
+                <div class="truss-content">
+                    <div class="truss-meta">TRUSS 4 — DMX <span class="line">25</span><span class="universe-tag">U3</span> <span class="open">(DMX 26 open)</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell quantum"><div class="addr">3.327</div><div class="name">Q6</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.001</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.011</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.021</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.031</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.041</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.051</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell quantum"><div class="addr">3.300</div><div class="name">Q5</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="truss-row">
+                <div class="truss-label">5</div>
+                <div class="truss-content">
+                    <div class="truss-meta">TRUSS 5 — DMX <span class="line">19</span><span class="universe-tag">U3</span> <span class="open">(DMX 20 open)</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell quantum"><div class="addr">3.381</div><div class="name">Q7</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.061</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.071</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.141</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.151</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.161</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell quantum"><div class="addr">3.354</div><div class="name">Q8</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.171</div><div class="name">XLED</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="room-section">
+            <div class="room-header">SAL C</div>
+            <div class="truss-row">
+                <div class="truss-label">6</div>
+                <div class="truss-content">
+                    <div class="truss-meta">TRUSS 6 — DMX <span class="line">27</span><span class="universe-tag">U3</span> <span class="open">(DMX 28 open)</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell xled"><div class="addr">3.181</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.191</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.201</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.211</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.221</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.231</div><div class="name">XLED</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="truss-row">
+                <div class="truss-label">7</div>
+                <div class="truss-content">
+                    <div class="truss-meta">TRUSS 7 — DMX <span class="line">29</span><span class="universe-tag">U3</span> <span class="open">(DMX 30 open)</span></div>
+                    <div class="fixture-strip">
+                        <div class="fixture-cell xled"><div class="addr">3.241</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.251</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.261</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.271</div><div class="name">XLED</div></div>
+                        <div class="fixture-cell xled"><div class="addr">3.281</div><div class="name">XLED</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-sections">
+            <h3>UNIVERSE ASSIGNMENT</h3>
+            <table class="dmx-table">
+                <tr><th>Universe</th><th>DMX Lines</th><th>Purpose</th></tr>
+                <tr><td>1</td><td>21, 23</td><td>Sal A conventionals (Truss 2, 3)</td></tr>
+                <tr><td>2</td><td>17</td><td>Sal A moving lights + XBARs (Truss 1)</td></tr>
+                <tr><td>3</td><td>19, 25, 27, 29</td><td>Sal B + Sal C truss fixtures (Truss 4, 5, 6, 7)</td></tr>
+                <tr><td>4</td><td>31</td><td>Auras over stage (Pipe)</td></tr>
+                <tr><td>5</td><td>—</td><td>Open for additional equipment</td></tr>
+                <tr><td>6–8</td><td>—</td><td>House lights (see Tab 2)</td></tr>
+            </table>
+            <h3>FIXTURE REFERENCE</h3>
+            <table class="fixture-table">
+                <tr><th class="color-cell"></th><th>Label</th><th>Manufacturer</th><th>Model</th><th>Type</th><th>Ch</th></tr>
+                <tr><td class="color-cell" style="background:#ffe6e6"></td><td><strong>Q1–Q8</strong></td><td>Martin</td><td>MAC Quantum Profile</td><td>Moving Spot</td><td>27</td></tr>
+                <tr><td class="color-cell" style="background:#fff0e6"></td><td><strong>Aura</strong></td><td>Martin</td><td>MAC Aura XB</td><td>Moving Wash</td><td>14</td></tr>
+                <tr><td class="color-cell" style="background:#e6ffe6"></td><td><strong>XBAR</strong></td><td>Bright</td><td>XBAR</td><td>LED Bar</td><td>32</td></tr>
+                <tr><td class="color-cell" style="background:#e6f0ff"></td><td><strong>XLED</strong></td><td>Bright</td><td>XLED HD</td><td>LED Wash</td><td>10</td></tr>
+                <tr><td class="color-cell" style="background:#fff9e6"></td><td><strong>Fr</strong></td><td>ADB</td><td>Lexpert Fresnel M</td><td>Conventional</td><td>1</td></tr>
+                <tr><td class="color-cell" style="background:#f0e6ff"></td><td><strong>Spot</strong></td><td>ADB</td><td>Lexpert Profile L</td><td>Conventional</td><td>4</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: HOUSE LIGHTS -->
+    <div id="house" class="tab-content">
+        <div class="tab-title">HOUSE LIGHTS — UNIVERSES 6–8</div>
+        <table class="house-table">
+            <thead>
+                <tr>
+                    <th style="width:25%">Fixture</th>
+                    <th style="width:25%">SAL A <span class="u-tag">U6</span></th>
+                    <th style="width:25%">SAL B <span class="u-tag">U7</span></th>
+                    <th style="width:25%">SAL C <span class="u-tag">U8</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="fixture-label"><strong>Taklys</strong><br><span class="fixture-desc">72× Ceiling Spots (1ch)</span></td>
+                    <td class="addr-cell">001 – 072</td>
+                    <td class="addr-cell">001 – 072</td>
+                    <td class="addr-cell">001 – 072</td>
+                </tr>
+                <tr class="kreios-row">
+                    <td class="fixture-label"><strong>Stage Spots</strong><br><span class="fixture-desc">4× per room (2ch each)</span></td>
+                    <td class="addr-cell">081, 083, 085, 087<br><span class="fixture-desc">Kreios — Ch2 must = 0!</span></td>
+                    <td class="addr-cell">081, 085: Kreios (Ch2=0!)<br>083, 087: <strong>BT-PROFILE</strong><br><span class="fixture-desc">BT-PROFILE: Ch2 = Dim Fine</span></td>
+                    <td class="addr-cell">081, 083, 085, 087<br><span class="fixture-desc">Kreios — Ch2 must = 0!</span></td>
+                </tr>
+                <tr class="vegg-row">
+                    <td class="fixture-label"><strong>Vegg</strong><br><span class="fixture-desc">Wall LEDs (5ch: RGBW+Dim)</span></td>
+                    <td class="addr-cell">211+ (48 fixtures)</td>
+                    <td class="addr-cell">211+ (60 fixtures)</td>
+                    <td class="addr-cell">211+ (51 fixtures)</td>
+                </tr>
+                <tr class="orbit-row">
+                    <td class="fixture-label"><strong>Orbit A</strong><br><span class="fixture-desc">Chandelier (54ch)</span></td>
+                    <td class="addr-cell"><strong>Orbit 1:</strong> 101 – 154</td>
+                    <td class="addr-cell"><strong>Orbit 3:</strong> 101 – 154</td>
+                    <td class="addr-cell"><strong>Orbit 5:</strong> 101 – 154</td>
+                </tr>
+                <tr class="orbit-row">
+                    <td class="fixture-label"><strong>Orbit B</strong><br><span class="fixture-desc">Chandelier (54ch)</span></td>
+                    <td class="addr-cell"><strong>Orbit 2:</strong> 156 – 209</td>
+                    <td class="addr-cell"><strong>Orbit 4:</strong> 156 – 209</td>
+                    <td class="addr-cell"><strong>Orbit 6:</strong> 156 – 209</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="orbit-map-section">
+            <h3>ORBIT CHANNEL MAP — Bright TheOrbit (54ch per fixture)</h3>
+            <p class="orbit-intro">Each chandelier has 3 motorized rings. Per ring: 7 motor channels + 10 LED channels. Plus 3 globe dimmers.</p>
+            <div class="orbit-maps-container">
+                <div class="orbit-map-block">
+                    <div class="orbit-map-header">ORBITS 1, 3, 5 — Base Address: 101</div>
+                    <table class="orbit-table">
+                        <tr><th>Ring</th><th>SPEED</th><th style="color:#999">TILT*</th><th style="color:#999">TURN*</th><th>DROP</th><th>LEDs</th><th>Globe</th></tr>
+                        <tr><td><strong>1</strong></td><td>101</td><td>102-103</td><td>104-105</td><td class="highlight">106-107</td><td>108–117</td><td>152</td></tr>
+                        <tr><td><strong>2</strong></td><td>118</td><td>119-120</td><td>121-122</td><td class="highlight">123-124</td><td>125–134</td><td>153</td></tr>
+                        <tr><td><strong>3</strong></td><td>135</td><td>136-137</td><td>138-139</td><td class="highlight">140-141</td><td>142–151</td><td>154</td></tr>
+                    </table>
+                </div>
+                <div class="orbit-map-block">
+                    <div class="orbit-map-header">ORBITS 2, 4, 6 — Base Address: 156</div>
+                    <table class="orbit-table">
+                        <tr><th>Ring</th><th>SPEED</th><th style="color:#999">TILT*</th><th style="color:#999">TURN*</th><th>DROP</th><th>LEDs</th><th>Globe</th></tr>
+                        <tr><td><strong>1</strong></td><td>156</td><td>157-158</td><td>159-160</td><td class="highlight">161-162</td><td>163–172</td><td>207</td></tr>
+                        <tr><td><strong>2</strong></td><td>173</td><td>174-175</td><td>176-177</td><td class="highlight">178-179</td><td>180–189</td><td>208</td></tr>
+                        <tr><td><strong>3</strong></td><td>190</td><td>191-192</td><td>193-194</td><td class="highlight">195-196</td><td>197–206</td><td>209</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="orbit-legend">
+                <strong>Motor Channels (7 per ring):</strong>
+                <ul>
+                    <li><strong>SPEED</strong> (1ch): Motor speed. <span class="critical">0 = brake ON, >0 = brake OFF + move</span></li>
+                    <li><strong>TILT</strong> (2ch): <em style="color:#999">NOT USED — fixture profile only</em></li>
+                    <li><strong>TURN</strong> (2ch): <em style="color:#999">NOT USED — fixture profile only</em></li>
+                    <li><strong>DROP</strong> (2ch): <span class="critical">HEIGHT CONTROL. 0 = up, 255 = down</span></li>
+                </ul>
+                <p style="font-size:9px;color:#666;margin-top:4px;"><em>Note: Rings are winch-driven (3 cables each). They move up/down only — no tilt or rotation capability.</em></p>
+                <strong>LED Channels (10 per ring):</strong> R, G, B, W, Dimmer × 2 strips. <span class="critical">Dimmer must be >0 for output!</span>
+            </div>
+        </div>
+
+        <div class="bottom-sections">
+            <h3>FIXTURE REFERENCE</h3>
+            <table class="fixture-table">
+                <tr><th>Label</th><th>Manufacturer</th><th>Model</th><th>Type</th><th>Ch</th></tr>
+                <tr><td><strong>Taklys</strong></td><td>Generic</td><td>Dimmer</td><td>Ceiling Spot</td><td>1</td></tr>
+                <tr><td><strong>Kreios</strong></td><td>Osram</td><td>Kreios Profile 80W WW</td><td>Stage Spot</td><td>2 (Dim+Strobe)</td></tr>
+                <tr><td><strong>BT-PROFILE</strong></td><td>BriteQ</td><td>BT-PROFILE WW</td><td>LED Profile</td><td>2 (Dim+DimFine)</td></tr>
+                <tr><td><strong>Vegg</strong></td><td>Elation</td><td>LED</td><td>Wall Light</td><td>5 (RGBW+Dim)</td></tr>
+                <tr><td><strong>Orbit</strong></td><td>Bright</td><td>TheOrbit</td><td>Motorized Chandelier</td><td>54</td></tr>
+            </table>
+            <h3>QUICK MOTOR REFERENCE</h3>
+            <table class="dmx-table">
+                <tr><th>To Move Ring</th><th>Set SPEED > 0</th><th>Set DROP value</th></tr>
+                <tr><td>Orbit A Ring 1</td><td>Ch 101 = 255</td><td>Ch 106 (0=up, 255=down)</td></tr>
+                <tr><td>Orbit A Ring 2</td><td>Ch 118 = 255</td><td>Ch 123 (0=up, 255=down)</td></tr>
+                <tr><td>Orbit A Ring 3</td><td>Ch 135 = 255</td><td>Ch 140 (0=up, 255=down)</td></tr>
+                <tr><td>Orbit B Ring 1</td><td>Ch 156 = 255</td><td>Ch 161 (0=up, 255=down)</td></tr>
+                <tr><td>Orbit B Ring 2</td><td>Ch 173 = 255</td><td>Ch 178 (0=up, 255=down)</td></tr>
+                <tr><td>Orbit B Ring 3</td><td>Ch 190 = 255</td><td>Ch 195 (0=up, 255=down)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => { tab.classList.remove('active'); });
+            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); });
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        function printCurrentTab() {
+            const activeTab = document.querySelector('.tab-content.active');
+            const tabId = activeTab.id;
+            document.body.classList.remove('print-truss', 'print-house');
+            document.body.classList.add('print-' + tabId);
+            window.print();
+        }
+    // grandMA3 patch data from spreadsheet (metadata source)
+// Format: [layer, name, fixtureSpec, mode, fid, unit, universe, address]
+const PATCH_DATA = [["HUB - Front","Profil 1","ADB@Lexpert Profile L Mode 5","Mode 5",1,0,1,101],["HUB - Front","Profil 2","ADB@Lexpert Profile L Mode 5","Mode 5",2,0,1,105],["HUB - Front","Profil 3","ADB@Lexpert Profile L Mode 5","Mode 5",3,0,1,109],["HUB - Front","Profil 4","ADB@Lexpert Profile L Mode 5","Mode 5",4,0,1,113],["HUB - Front","Fresnel 1","ADB@Lexpert Fresnel M Default","Default",11,0,1,1],["HUB - Front","Fresnel 2","ADB@Lexpert Fresnel M Default","Default",12,0,1,7],["HUB - Front","Fresnel 3","ADB@Lexpert Fresnel M Default","Default",13,0,1,13],["HUB - Front","Fresnel 4","ADB@Lexpert Fresnel M Default","Default",14,0,1,19],["HUB - Front","Fresnel 5","ADB@Lexpert Fresnel M Default","Default",15,0,1,25],["HUB - Front","Fresnel 6","ADB@Lexpert Fresnel M Default","Default",16,0,1,31],["HUB - Front","Fresnel 7","ADB@Lexpert Fresnel M Default","Default",17,0,1,37],["HUB - Front","Fresnel 8","ADB@Lexpert Fresnel M Default","Default",18,0,1,43],["HUB - Front","Fresnel 9","ADB@Lexpert Fresnel M Default","Default",19,0,1,49],["HUB - Front","Fresnel 10","ADB@Lexpert Fresnel M Default","Default",20,0,1,55],["HUB - Front","Fresnel 11","ADB@Lexpert Fresnel M Default","Default",21,0,1,61],["HUB - Front","Fresnel 13","ADB@Lexpert Fresnel M Default","Default",22,0,1,73],["HUB - Front","Fresnel 12","ADB@Lexpert Fresnel M Default","Default",23,0,1,67],["HUB - Quantum Spot","Quantum 3","Martin@Mac Quantum Profile Extended","Extended",103,0,1,309],["HUB - Quantum Spot","Quantum 4","Martin@Mac Quantum Profile Extended","Extended",104,0,1,336],["Fog","JCHazePr 1","Martin@Jem Compact Hazer Pro Mode 0","Mode 0",4000,0,1,501],["Fog","JCHazePr 2","Martin@Jem Compact Hazer Pro Mode 0","Mode 0",4001,0,1,504],["HUB - Quantum Spot","Quantum 1","Martin@Mac Quantum Profile Extended","Extended",101,0,2,29],["HUB - Quantum Spot","Quantum 2","Martin@Mac Quantum Profile Extended","Extended",102,0,2,56],["HUB - XBAR","XBAR 1","Bright@XBAR 32CH","32CH",3001,0,2,100],["HUB - XBAR","XBAR 2","Bright@XBAR 32CH","32CH",3002,0,2,132],["HUB - XBAR","XBAR 3","Bright@XBAR 32CH","32CH",3003,0,2,164],["HUB - XBAR","XBAR 4","Bright@XBAR 32CH","32CH",3004,0,2,196],["HUB - XBAR","XBAR 5","Bright@XBAR 32CH","32CH",3005,0,2,228],["HUB - XBAR","XBAR 6","Bright@XBAR 32CH","32CH",3006,0,2,260],["HUB - XBAR","XBAR 7","Bright@XBAR 32CH","32CH",3007,0,2,292],["HUB - XBAR","XBAR 8","Bright@XBAR 32CH","32CH",3008,0,2,324],["HUB - XBAR","XBAR 9","Bright@XBAR 32CH","32CH",3009,0,2,356],["HUB - XBAR","XBAR 10","Bright@XBAR 32CH","32CH",3010,0,2,388],["HUB - XBAR","XBAR 11","Bright@XBAR 32CH","32CH",3011,0,2,420],["HUB - XBAR","XBAR 12","Bright@XBAR 32CH","32CH",3012,0,2,452],["HUB - Front","Profil 5","ADB@Lexpert Profile L Mode 5","Mode 5",5,0,3,81],["HUB - Front","Profil 6","ADB@Lexpert Profile L Mode 5","Mode 5",6,0,3,85],["HUB - Quantum Spot","Quantum 5","Martin@Mac Quantum Profile Extended","Extended",105,0,3,300],["HUB - Quantum Spot","Quantum 6","Martin@Mac Quantum Profile Extended","Extended",106,0,3,327],["HUB - Quantum Spot","Quantum 7","Martin@Mac Quantum Profile Extended","Extended",107,0,3,381],["HUB - Quantum Spot","Quantum 8","Martin@Mac Quantum Profile Extended","Extended",108,0,3,354],["HUB - XLED","XLED HD 1","Bright@XLED HD 10CH","10CH",301,0,3,1],["HUB - XLED","XLED HD 2","Bright@XLED HD 10CH","10CH",302,0,3,11],["HUB - XLED","XLED HD 3","Bright@XLED HD 10CH","10CH",303,0,3,21],["HUB - XLED","XLED HD 4","Bright@XLED HD 10CH","10CH",304,0,3,31],["HUB - XLED","XLED HD 5","Bright@XLED HD 10CH","10CH",305,0,3,41],["HUB - XLED","XLED HD 6","Bright@XLED HD 10CH","10CH",306,0,3,51],["HUB - XLED","XLED HD 7","Bright@XLED HD 10CH","10CH",307,0,3,61],["HUB - XLED","XLED HD 8","Bright@XLED HD 10CH","10CH",308,0,3,71],["HUB - XLED","XLED HD 9","Bright@XLED HD 10CH","10CH",309,0,3,141],["HUB - XLED","XLED HD 10","Bright@XLED HD 10CH","10CH",310,0,3,151],["HUB - XLED","XLED HD 11","Bright@XLED HD 10CH","10CH",311,0,3,161],["HUB - XLED","XLED HD 12","Bright@XLED HD 10CH","10CH",312,0,3,171],["HUB - XLED","XLED HD 13","Bright@XLED HD 10CH","10CH",313,0,3,181],["HUB - XLED","XLED HD 14","Bright@XLED HD 10CH","10CH",314,0,3,191],["HUB - XLED","XLED HD 15","Bright@XLED HD 10CH","10CH",315,0,3,201],["HUB - XLED","XLED HD 16","Bright@XLED HD 10CH","10CH",316,0,3,211],["HUB - XLED","XLED HD 17","Bright@XLED HD 10CH","10CH",317,0,3,221],["HUB - XLED","XLED HD 18","Bright@XLED HD 10CH","10CH",318,0,3,231],["HUB - XLED","XLED HD 19","Bright@XLED HD 10CH","10CH",319,0,3,241],["HUB - XLED","XLED HD 20","Bright@XLED HD 10CH","10CH",320,0,3,251],["HUB - XLED","XLED HD 21","Bright@XLED HD 10CH","10CH",321,0,3,261],["HUB - XLED","XLED HD 22","Bright@XLED HD 10CH","10CH",322,0,3,271],["HUB - XLED","XLED HD 23","Bright@XLED HD 10CH","10CH",323,0,3,281],["HUB - Aura","Aura 1","Martin@Mac Aura XB Standard - Extended","Standard - Extended",201,0,4,1],["HUB - Aura","Aura 2","Martin@Mac Aura XB Standard - Extended","Standard - Extended",202,0,4,15],["HUB - Aura","Aura 3","Martin@Mac Aura XB Standard - Extended","Standard - Extended",203,0,4,29],["HUB - Aura","Aura 4","Martin@Mac Aura XB Standard - Extended","Standard - Extended",204,0,4,43],["HUB - Aura","Aura 5","Martin@Mac Aura XB Standard - Extended","Standard - Extended",205,0,4,57],["HUB - Aura","Aura 6","Martin@Mac Aura XB Standard - Extended","Standard - Extended",206,0,4,71],["HUB - Aura","Aura 7","Martin@Mac Aura XB Standard - Extended","Standard - Extended",207,0,4,85],["HUB - Aura","Aura 8","Martin@Mac Aura XB Standard - Extended","Standard - Extended",208,0,4,99],["HUB - Aura","Aura 9","Martin@Mac Aura XB Standard - Extended","Standard - Extended",209,0,4,113],["HUB - Aura","Aura 10","Martin@Mac Aura XB Standard - Extended","Standard - Extended",210,0,4,127],["HUB - Front","Profil 7","ADB@Lexpert Profile L Mode 5","Mode 5",7,0,5,295],["astra","Lum70016 1","Prolights@Luma 700","Standard",2001,0,5,1],["astra","Lum70016 2","Prolights@Luma 700","Standard",2002,0,5,29],["astra","Lum70016 3","Prolights@Luma 700","Standard",2003,0,5,57],["astra","Lum70016 4","Prolights@Luma 700","Standard",2004,0,5,85],["astra","XLED 3 1","Bright Norway@XLED","6 channel",2005,0,5,113],["astra","XLED 3 2","Bright Norway@XLED","6 channel",2006,0,5,119],["astra","XLED 3 3","Bright Norway@XLED","6 channel",2007,0,5,125],["astra","XLED 3 4","Bright Norway@XLED","6 channel",2008,0,5,131],["astra","XLED 3 5","Bright Norway@XLED","6 channel",2009,0,5,137],["astra","XLED 3 6","Bright Norway@XLED","6 channel",2010,0,5,143],["astra","XLED 3 7","Bright Norway@XLED","6 channel",2011,0,5,149],["astra","XLED 3 8","Bright Norway@XLED","6 channel",2012,0,5,155],["astra","XLED 3 9","Bright Norway@XLED","6 channel",2013,0,5,161],["astra","XLED 3 10","Bright Norway@XLED","6 channel",2014,0,5,167],["HUB - side front","Sal A 1","Osram@Kreios Profile 80W WW 2 channel","2 channel",901,0,6,81],["HUB - side front","Sal A 2","Osram@Kreios Profile 80W WW 2 channel","2 channel",902,0,6,83],["HUB - side front","Sal A 3","Osram@Kreios Profile 80W WW 2 channel","2 channel",903,0,6,85],["HUB - side front","Sal A 4","Osram@Kreios Profile 80W WW 2 channel","2 channel",904,0,6,87],["HUB - VEGG SAL A","Vegg Sal A 1","Elation@LED Vegg HUB 5 channel","5 channel",1101,0,6,211],["HUB - VEGG SAL A","Vegg Sal A 2","Elation@LED Vegg HUB 5 channel","5 channel",1102,0,6,216],["HUB - VEGG SAL A","Vegg Sal A 3","Elation@LED Vegg HUB 5 channel","5 channel",1103,0,6,221],["HUB - VEGG SAL A","Vegg Sal A 4","Elation@LED Vegg HUB 5 channel","5 channel",1104,0,6,226],["HUB - VEGG SAL A","Vegg Sal A 5","Elation@LED Vegg HUB 5 channel","5 channel",1105,0,6,231],["HUB - VEGG SAL A","Vegg Sal A 6","Elation@LED Vegg HUB 5 channel","5 channel",1106,0,6,236],["HUB - VEGG SAL A","Vegg Sal A 7","Elation@LED Vegg HUB 5 channel","5 channel",1107,0,6,241],["HUB - VEGG SAL A","Vegg Sal A 8","Elation@LED Vegg HUB 5 channel","5 channel",1108,0,6,246],["HUB - VEGG SAL A","Vegg Sal A 9","Elation@LED Vegg HUB 5 channel","5 channel",1109,0,6,251],["HUB - VEGG SAL A","Vegg Sal A 10","Elation@LED Vegg HUB 5 channel","5 channel",1110,0,6,256],["HUB - VEGG SAL A","Vegg Sal A 11","Elation@LED Vegg HUB 5 channel","5 channel",1111,0,6,261],["HUB - VEGG SAL A","Vegg Sal A 12","Elation@LED Vegg HUB 5 channel","5 channel",1112,0,6,266],["HUB - VEGG SAL A","Vegg Sal A 13","Elation@LED Vegg HUB 5 channel","5 channel",1113,0,6,271],["HUB - VEGG SAL A","Vegg Sal A 14","Elation@LED Vegg HUB 5 channel","5 channel",1114,0,6,276],["HUB - VEGG SAL A","Vegg Sal A 15","Elation@LED Vegg HUB 5 channel","5 channel",1115,0,6,281],["HUB - VEGG SAL A","Vegg Sal A 16","Elation@LED Vegg HUB 5 channel","5 channel",1116,0,6,286],["HUB - VEGG SAL A","Vegg Sal A 17","Elation@LED Vegg HUB 5 channel","5 channel",1117,0,6,291],["HUB - VEGG SAL A","Vegg Sal A 18","Elation@LED Vegg HUB 5 channel","5 channel",1118,0,6,296],["HUB - VEGG SAL A","Vegg Sal A 19","Elation@LED Vegg HUB 5 channel","5 channel",1119,0,6,301],["HUB - VEGG SAL A","Vegg Sal A 20","Elation@LED Vegg HUB 5 channel","5 channel",1120,0,6,306],["HUB - VEGG SAL A","Vegg Sal A 21","Elation@LED Vegg HUB 5 channel","5 channel",1121,0,6,311],["HUB - VEGG SAL A","Vegg Sal A 22","Elation@LED Vegg HUB 5 channel","5 channel",1122,0,6,316],["HUB - VEGG SAL A","Vegg Sal A 23","Elation@LED Vegg HUB 5 channel","5 channel",1123,0,6,321],["HUB - VEGG SAL A","Vegg Sal A 24","Elation@LED Vegg HUB 5 channel","5 channel",1124,0,6,326],["HUB - VEGG SAL A","Vegg Sal A 25","Elation@LED Vegg HUB 5 channel","5 channel",1125,0,6,331],["HUB - VEGG SAL A","Vegg Sal A 26","Elation@LED Vegg HUB 5 channel","5 channel",1126,0,6,336],["HUB - VEGG SAL A","Vegg Sal A 27","Elation@LED Vegg HUB 5 channel","5 channel",1127,0,6,341],["HUB - VEGG SAL A","Vegg Sal A 28","Elation@LED Vegg HUB 5 channel","5 channel",1128,0,6,346],["HUB - VEGG SAL A","Vegg Sal A 29","Elation@LED Vegg HUB 5 channel","5 channel",1129,0,6,351],["HUB - VEGG SAL A","Vegg Sal A 30","Elation@LED Vegg HUB 5 channel","5 channel",1130,0,6,356],["HUB - VEGG SAL A","Vegg Sal A 31","Elation@LED Vegg HUB 5 channel","5 channel",1131,0,6,361],["HUB - VEGG SAL A","Vegg Sal A 32","Elation@LED Vegg HUB 5 channel","5 channel",1132,0,6,366],["HUB - VEGG SAL A","Vegg Sal A 33","Elation@LED Vegg HUB 5 channel","5 channel",1133,0,6,371],["HUB - VEGG SAL A","Vegg Sal A 34","Elation@LED Vegg HUB 5 channel","5 channel",1134,0,6,376],["HUB - VEGG SAL A","Vegg Sal A 35","Elation@LED Vegg HUB 5 channel","5 channel",1135,0,6,381],["HUB - VEGG SAL A","Vegg Sal A 36","Elation@LED Vegg HUB 5 channel","5 channel",1136,0,6,386],["HUB - VEGG SAL A","Vegg Sal A 37","Elation@LED Vegg HUB 5 channel","5 channel",1137,0,6,391],["HUB - VEGG SAL A","Vegg Sal A 38","Elation@LED Vegg HUB 5 channel","5 channel",1138,0,6,396],["HUB - VEGG SAL A","Vegg Sal A 39","Elation@LED Vegg HUB 5 channel","5 channel",1139,0,6,401],["HUB - VEGG SAL A","Vegg Sal A 40","Elation@LED Vegg HUB 5 channel","5 channel",1140,0,6,406],["HUB - VEGG SAL A","Vegg Sal A 41","Elation@LED Vegg HUB 5 channel","5 channel",1141,0,6,411],["HUB - VEGG SAL A","Vegg Sal A 42","Elation@LED Vegg HUB 5 channel","5 channel",1142,0,6,416],["HUB - VEGG SAL A","Vegg Sal A 43","Elation@LED Vegg HUB 5 channel","5 channel",1143,0,6,421],["HUB - VEGG SAL A","Vegg Sal A 44","Elation@LED Vegg HUB 5 channel","5 channel",1144,0,6,426],["HUB - VEGG SAL A","Vegg Sal A 45","Elation@LED Vegg HUB 5 channel","5 channel",1145,0,6,431],["HUB - VEGG SAL A","Vegg Sal A 46","Elation@LED Vegg HUB 5 channel","5 channel",1146,0,6,436],["HUB - VEGG SAL A","Vegg Sal A 47","Elation@LED Vegg HUB 5 channel","5 channel",1147,0,6,441],["HUB - VEGG SAL A","Vegg Sal A 48","Elation@LED Vegg HUB 5 channel","5 channel",1148,0,6,446],["HUB - Lysekroner","TheOrbit 1","Bright@TheOrbit - Clarion The Hub Default","Default",5001,0,6,101],["HUB - Lysekroner","TheOrbit 2","Bright@TheOrbit - Clarion The Hub Default","Default",5002,0,6,156],["HUB - side front","Sal B 1","Osram@Kreios Profile 80W WW 2 channel","2 channel",905,0,7,81],["HUB - side front","Sal B 2","Osram@Kreios Profile 80W WW 2 channel","2 channel",906,0,7,83],["HUB - side front","Sal B 3","Osram@Kreios Profile 80W WW 2 channel","2 channel",907,0,7,85],["HUB - side front","Sal B 4","Osram@Kreios Profile 80W WW 2 channel","2 channel",908,0,7,87],["HUB - VEGG SAL B","Vegg Sal B 1","Elation@LED Vegg HUB 5 channel","5 channel",1001,0,7,211],["HUB - VEGG SAL B","Vegg Sal B 2","Elation@LED Vegg HUB 5 channel","5 channel",1002,0,7,216],["HUB - VEGG SAL B","Vegg Sal B 3","Elation@LED Vegg HUB 5 channel","5 channel",1003,0,7,221],["HUB - VEGG SAL B","Vegg Sal B 4","Elation@LED Vegg HUB 5 channel","5 channel",1004,0,7,226],["HUB - VEGG SAL B","Vegg Sal B 5","Elation@LED Vegg HUB 5 channel","5 channel",1005,0,7,231],["HUB - VEGG SAL B","Vegg Sal B 6","Elation@LED Vegg HUB 5 channel","5 channel",1006,0,7,236],["HUB - VEGG SAL B","Vegg Sal B 7","Elation@LED Vegg HUB 5 channel","5 channel",1007,0,7,241],["HUB - VEGG SAL B","Vegg Sal B 8","Elation@LED Vegg HUB 5 channel","5 channel",1008,0,7,246],["HUB - VEGG SAL B","Vegg Sal B 9","Elation@LED Vegg HUB 5 channel","5 channel",1009,0,7,251],["HUB - VEGG SAL B","Vegg Sal B 10","Elation@LED Vegg HUB 5 channel","5 channel",1010,0,7,256],["HUB - VEGG SAL B","Vegg Sal B 11","Elation@LED Vegg HUB 5 channel","5 channel",1011,0,7,261],["HUB - VEGG SAL B","Vegg Sal B 12","Elation@LED Vegg HUB 5 channel","5 channel",1012,0,7,266],["HUB - VEGG SAL B","Vegg Sal B 13","Elation@LED Vegg HUB 5 channel","5 channel",1013,0,7,271],["HUB - VEGG SAL B","Vegg Sal B 14","Elation@LED Vegg HUB 5 channel","5 channel",1014,0,7,276],["HUB - VEGG SAL B","Vegg Sal B 15","Elation@LED Vegg HUB 5 channel","5 channel",1015,0,7,281],["HUB - VEGG SAL B","Vegg Sal B 16","Elation@LED Vegg HUB 5 channel","5 channel",1016,0,7,286],["HUB - VEGG SAL B","Vegg Sal B 17","Elation@LED Vegg HUB 5 channel","5 channel",1017,0,7,291],["HUB - VEGG SAL B","Vegg Sal B 18","Elation@LED Vegg HUB 5 channel","5 channel",1018,0,7,296],["HUB - VEGG SAL B","Vegg Sal B 19","Elation@LED Vegg HUB 5 channel","5 channel",1019,0,7,301],["HUB - VEGG SAL B","Vegg Sal B 20","Elation@LED Vegg HUB 5 channel","5 channel",1020,0,7,306],["HUB - VEGG SAL B","Vegg Sal B 21","Elation@LED Vegg HUB 5 channel","5 channel",1021,0,7,311],["HUB - VEGG SAL B","Vegg Sal B 22","Elation@LED Vegg HUB 5 channel","5 channel",1022,0,7,316],["HUB - VEGG SAL B","Vegg Sal B 23","Elation@LED Vegg HUB 5 channel","5 channel",1023,0,7,321],["HUB - VEGG SAL B","Vegg Sal B 24","Elation@LED Vegg HUB 5 channel","5 channel",1024,0,7,326],["HUB - VEGG SAL B","Vegg Sal B 25","Elation@LED Vegg HUB 5 channel","5 channel",1025,0,7,331],["HUB - VEGG SAL B","Vegg Sal B 26","Elation@LED Vegg HUB 5 channel","5 channel",1026,0,7,336],["HUB - VEGG SAL B","Vegg Sal B 27","Elation@LED Vegg HUB 5 channel","5 channel",1027,0,7,341],["HUB - VEGG SAL B","Vegg Sal B 28","Elation@LED Vegg HUB 5 channel","5 channel",1028,0,7,346],["HUB - VEGG SAL B","Vegg Sal B 29","Elation@LED Vegg HUB 5 channel","5 channel",1029,0,7,351],["HUB - VEGG SAL B","Vegg Sal B 30","Elation@LED Vegg HUB 5 channel","5 channel",1030,0,7,356],["HUB - VEGG SAL B","Vegg Sal B 31","Elation@LED Vegg HUB 5 channel","5 channel",1031,0,7,361],["HUB - VEGG SAL B","Vegg Sal B 32","Elation@LED Vegg HUB 5 channel","5 channel",1032,0,7,366],["HUB - VEGG SAL B","Vegg Sal B 33","Elation@LED Vegg HUB 5 channel","5 channel",1033,0,7,371],["HUB - VEGG SAL B","Vegg Sal B 34","Elation@LED Vegg HUB 5 channel","5 channel",1034,0,7,376],["HUB - VEGG SAL B","Vegg Sal B 35","Elation@LED Vegg HUB 5 channel","5 channel",1035,0,7,381],["HUB - VEGG SAL B","Vegg Sal B 36","Elation@LED Vegg HUB 5 channel","5 channel",1036,0,7,386],["HUB - VEGG SAL B","Vegg Sal B 37","Elation@LED Vegg HUB 5 channel","5 channel",1037,0,7,391],["HUB - VEGG SAL B","Vegg Sal B 38","Elation@LED Vegg HUB 5 channel","5 channel",1038,0,7,396],["HUB - VEGG SAL B","Vegg Sal B 39","Elation@LED Vegg HUB 5 channel","5 channel",1039,0,7,401],["HUB - VEGG SAL B","Vegg Sal B 40","Elation@LED Vegg HUB 5 channel","5 channel",1040,0,7,406],["HUB - VEGG SAL B","Vegg Sal B 41","Elation@LED Vegg HUB 5 channel","5 channel",1041,0,7,411],["HUB - VEGG SAL B","Vegg Sal B 42","Elation@LED Vegg HUB 5 channel","5 channel",1042,0,7,416],["HUB - VEGG SAL B","Vegg Sal B 43","Elation@LED Vegg HUB 5 channel","5 channel",1043,0,7,421],["HUB - VEGG SAL B","Vegg Sal B 44","Elation@LED Vegg HUB 5 channel","5 channel",1044,0,7,426],["HUB - VEGG SAL B","Vegg Sal B 45","Elation@LED Vegg HUB 5 channel","5 channel",1045,0,7,431],["HUB - VEGG SAL B","Vegg Sal B 46","Elation@LED Vegg HUB 5 channel","5 channel",1046,0,7,436],["HUB - VEGG SAL B","Vegg Sal B 47","Elation@LED Vegg HUB 5 channel","5 channel",1047,0,7,441],["HUB - VEGG SAL B","Vegg Sal B 48","Elation@LED Vegg HUB 5 channel","5 channel",1048,0,7,446],["HUB - VEGG SAL B","Vegg Sal B 49","Elation@LED Vegg HUB 5 channel","5 channel",1049,0,7,451],["HUB - VEGG SAL B","Vegg Sal B 50","Elation@LED Vegg HUB 5 channel","5 channel",1050,0,7,456],["HUB - VEGG SAL B","Vegg Sal B 51","Elation@LED Vegg HUB 5 channel","5 channel",1051,0,7,461],["HUB - VEGG SAL B","Vegg Sal B 52","Elation@LED Vegg HUB 5 channel","5 channel",1052,0,7,466],["HUB - VEGG SAL B","Vegg Sal B 53","Elation@LED Vegg HUB 5 channel","5 channel",1053,0,7,471],["HUB - VEGG SAL B","Vegg Sal B 54","Elation@LED Vegg HUB 5 channel","5 channel",1054,0,7,476],["HUB - VEGG SAL B","Vegg Sal B 55","Elation@LED Vegg HUB 5 channel","5 channel",1055,0,7,481],["HUB - VEGG SAL B","Vegg Sal B 56","Elation@LED Vegg HUB 5 channel","5 channel",1056,0,7,486],["HUB - VEGG SAL B","Vegg Sal B 57","Elation@LED Vegg HUB 5 channel","5 channel",1057,0,7,491],["HUB - VEGG SAL B","Vegg Sal B 58","Elation@LED Vegg HUB 5 channel","5 channel",1058,0,7,496],["HUB - VEGG SAL B","Vegg Sal B 59","Elation@LED Vegg HUB 5 channel","5 channel",1059,0,7,501],["HUB - VEGG SAL B","Vegg Sal B 60","Elation@LED Vegg HUB 5 channel","5 channel",1060,0,7,506],["HUB - Lysekroner","TheOrbit 3","Bright@TheOrbit - Clarion The Hub Default","Default",5003,0,7,101],["HUB - Lysekroner","TheOrbit 4","Bright@TheOrbit - Clarion The Hub Default","Default",5004,0,7,156],["HUB - VEGG SAL C","Vegg Sal C 1","Elation@LED Vegg HUB 5 channel","5 channel",1201,0,8,211],["HUB - VEGG SAL C","Vegg Sal C 2","Elation@LED Vegg HUB 5 channel","5 channel",1202,0,8,216],["HUB - VEGG SAL C","Vegg Sal C 3","Elation@LED Vegg HUB 5 channel","5 channel",1203,0,8,221],["HUB - VEGG SAL C","Vegg Sal C 4","Elation@LED Vegg HUB 5 channel","5 channel",1204,0,8,226],["HUB - VEGG SAL C","Vegg Sal C 5","Elation@LED Vegg HUB 5 channel","5 channel",1205,0,8,231],["HUB - VEGG SAL C","Vegg Sal C 6","Elation@LED Vegg HUB 5 channel","5 channel",1206,0,8,236],["HUB - VEGG SAL C","Vegg Sal C 7","Elation@LED Vegg HUB 5 channel","5 channel",1207,0,8,241],["HUB - VEGG SAL C","Vegg Sal C 8","Elation@LED Vegg HUB 5 channel","5 channel",1208,0,8,246],["HUB - VEGG SAL C","Vegg Sal C 9","Elation@LED Vegg HUB 5 channel","5 channel",1209,0,8,251],["HUB - VEGG SAL C","Vegg Sal C 10","Elation@LED Vegg HUB 5 channel","5 channel",1210,0,8,256],["HUB - VEGG SAL C","Vegg Sal C 11","Elation@LED Vegg HUB 5 channel","5 channel",1211,0,8,261],["HUB - VEGG SAL C","Vegg Sal C 12","Elation@LED Vegg HUB 5 channel","5 channel",1212,0,8,266],["HUB - VEGG SAL C","Vegg Sal C 13","Elation@LED Vegg HUB 5 channel","5 channel",1213,0,8,271],["HUB - VEGG SAL C","Vegg Sal C 14","Elation@LED Vegg HUB 5 channel","5 channel",1214,0,8,276],["HUB - VEGG SAL C","Vegg Sal C 15","Elation@LED Vegg HUB 5 channel","5 channel",1215,0,8,281],["HUB - VEGG SAL C","Vegg Sal C 16","Elation@LED Vegg HUB 5 channel","5 channel",1216,0,8,286],["HUB - VEGG SAL C","Vegg Sal C 17","Elation@LED Vegg HUB 5 channel","5 channel",1217,0,8,291],["HUB - VEGG SAL C","Vegg Sal C 18","Elation@LED Vegg HUB 5 channel","5 channel",1218,0,8,296],["HUB - VEGG SAL C","Vegg Sal C 19","Elation@LED Vegg HUB 5 channel","5 channel",1219,0,8,301],["HUB - VEGG SAL C","Vegg Sal C 20","Elation@LED Vegg HUB 5 channel","5 channel",1220,0,8,306],["HUB - VEGG SAL C","Vegg Sal C 21","Elation@LED Vegg HUB 5 channel","5 channel",1221,0,8,311],["HUB - VEGG SAL C","Vegg Sal C 22","Elation@LED Vegg HUB 5 channel","5 channel",1222,0,8,316],["HUB - VEGG SAL C","Vegg Sal C 23","Elation@LED Vegg HUB 5 channel","5 channel",1223,0,8,321],["HUB - VEGG SAL C","Vegg Sal C 24","Elation@LED Vegg HUB 5 channel","5 channel",1224,0,8,326],["HUB - VEGG SAL C","Vegg Sal C 25","Elation@LED Vegg HUB 5 channel","5 channel",1225,0,8,331],["HUB - VEGG SAL C","Vegg Sal C 26","Elation@LED Vegg HUB 5 channel","5 channel",1226,0,8,336],["HUB - VEGG SAL C","Vegg Sal C 27","Elation@LED Vegg HUB 5 channel","5 channel",1227,0,8,341],["HUB - VEGG SAL C","Vegg Sal C 28","Elation@LED Vegg HUB 5 channel","5 channel",1228,0,8,346],["HUB - VEGG SAL C","Vegg Sal C 29","Elation@LED Vegg HUB 5 channel","5 channel",1229,0,8,351],["HUB - VEGG SAL C","Vegg Sal C 30","Elation@LED Vegg HUB 5 channel","5 channel",1230,0,8,356],["HUB - VEGG SAL C","Vegg Sal C 31","Elation@LED Vegg HUB 5 channel","5 channel",1231,0,8,361],["HUB - VEGG SAL C","Vegg Sal C 32","Elation@LED Vegg HUB 5 channel","5 channel",1232,0,8,366],["HUB - VEGG SAL C","Vegg Sal C 33","Elation@LED Vegg HUB 5 channel","5 channel",1233,0,8,371],["HUB - VEGG SAL C","Vegg Sal C 34","Elation@LED Vegg HUB 5 channel","5 channel",1234,0,8,376],["HUB - VEGG SAL C","Vegg Sal C 35","Elation@LED Vegg HUB 5 channel","5 channel",1235,0,8,381],["HUB - VEGG SAL C","Vegg Sal C 36","Elation@LED Vegg HUB 5 channel","5 channel",1236,0,8,386],["HUB - VEGG SAL C","Vegg Sal C 37","Elation@LED Vegg HUB 5 channel","5 channel",1237,0,8,391],["HUB - VEGG SAL C","Vegg Sal C 38","Elation@LED Vegg HUB 5 channel","5 channel",1238,0,8,396],["HUB - VEGG SAL C","Vegg Sal C 39","Elation@LED Vegg HUB 5 channel","5 channel",1239,0,8,401],["HUB - VEGG SAL C","Vegg Sal C 40","Elation@LED Vegg HUB 5 channel","5 channel",1240,0,8,406],["HUB - VEGG SAL C","Vegg Sal C 41","Elation@LED Vegg HUB 5 channel","5 channel",1241,0,8,411],["HUB - VEGG SAL C","Vegg Sal C 42","Elation@LED Vegg HUB 5 channel","5 channel",1242,0,8,416],["HUB - VEGG SAL C","Vegg Sal C 43","Elation@LED Vegg HUB 5 channel","5 channel",1243,0,8,421],["HUB - VEGG SAL C","Vegg Sal C 44","Elation@LED Vegg HUB 5 channel","5 channel",1244,0,8,426],["HUB - VEGG SAL C","Vegg Sal C 45","Elation@LED Vegg HUB 5 channel","5 channel",1245,0,8,431],["HUB - VEGG SAL C","Vegg Sal C 46","Elation@LED Vegg HUB 5 channel","5 channel",1246,0,8,436],["HUB - VEGG SAL C","Vegg Sal C 47","Elation@LED Vegg HUB 5 channel","5 channel",1247,0,8,441],["HUB - VEGG SAL C","Vegg Sal C 48","Elation@LED Vegg HUB 5 channel","5 channel",1248,0,8,446],["HUB - VEGG SAL C","Vegg Sal C 49","Elation@LED Vegg HUB 5 channel","5 channel",1249,0,8,451],["HUB - VEGG SAL C","Vegg Sal C 50","Elation@LED Vegg HUB 5 channel","5 channel",1250,0,8,456],["HUB - VEGG SAL C","Vegg Sal C 51","Elation@LED Vegg HUB 5 channel","5 channel",1251,0,8,461],["HUB - Lysekroner","TheOrbit 5","Bright@TheOrbit - Clarion The Hub Default","Default",5005,0,8,101],["HUB - Lysekroner","TheOrbit 6","Bright@TheOrbit - Clarion The Hub Default","Default",5006,0,8,156],["HUB - side front","Sal C 1","Osram@Kreios Profile 80W WW 2 channel","2 channel",909,0,8,81],["HUB - side front","Sal C 2","Osram@Kreios Profile 80W WW 2 channel","2 channel",910,0,8,83],["HUB - side front","Sal C 3","Osram@Kreios Profile 80W WW 2 channel","2 channel",911,0,8,85],["HUB - side front","Sal C 4","Osram@Kreios Profile 80W WW 2 channel","2 channel",912,0,8,87]];
+
+function exportPatch(format) {
+    // Build CSV header
+    const header = 'Name,Type,Mode,Universe,Address';
+    
+    // Parse all fixture addresses from the page (authoritative source)
+    const pageFixtures = [];
+    document.querySelectorAll('.fixture-cell').forEach(cell => {
+        const addrEl = cell.querySelector('.addr');
+        const nameEl = cell.querySelector('.name');
+        if (!addrEl) return;
+        const addr = addrEl.textContent.trim();
+        const name = nameEl ? nameEl.textContent.trim() : '';
+        const type = Array.from(cell.classList).find(c => c !== 'fixture-cell') || '';
+        const parts = addr.split('.');
+        if (parts.length === 2) {
+            pageFixtures.push({
+                universe: parseInt(parts[0]),
+                address: parseInt(parts[1]),
+                name: name,
+                type: type,
+                addr: addr
+            });
+        }
+    });
+    
+    // Build lookup from spreadsheet by universe+address
+    const spreadsheetLookup = {};
+    PATCH_DATA.forEach(p => {
+        const key = p[6] + '.' + String(p[7]).padStart(3, '0');
+        spreadsheetLookup[key] = {
+            layer: p[0], name: p[1], spec: p[2], mode: p[3],
+            fid: p[4], unit: p[5], universe: p[6], address: p[7]
+        };
+    });
+    
+    // Also build lookup by name pattern for matching
+    const nameLookup = {};
+    PATCH_DATA.forEach(p => {
+        nameLookup[p[1].toLowerCase()] = {
+            layer: p[0], name: p[1], spec: p[2], mode: p[3],
+            fid: p[4], unit: p[5], universe: p[6], address: p[7]
+        };
+    });
+    
+    const rows = [];
+    const used = new Set();
+    
+    // First: export all fixtures visible on the page (authoritative addresses)
+    pageFixtures.forEach(pf => {
+        const key = pf.universe + '.' + String(pf.address).padStart(3, '0');
+        let match = spreadsheetLookup[key];
+        
+        // If no exact address match, try name matching
+        if (!match) {
+            const nameKey = pf.name.toLowerCase();
+            // Try various name patterns
+            for (const [k, v] of Object.entries(nameLookup)) {
+                if (k.includes(nameKey) || nameKey.includes(k.replace(/\d+$/, '').trim())) {
+                    if (v.universe === pf.universe) {
+                        match = v;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (match) {
+            // Use spreadsheet metadata but OUR address
+            const mfg = match.spec.split('@')[0] || '';
+            rows.push([match.name, match.spec, match.mode, pf.universe, pf.address].map(csvEscape).join(','));
+            used.add(match.fid);
+        } else {
+            // No spreadsheet match — build from page data
+            const typeMap = {
+                quantum: { spec: 'Martin@Mac Quantum Profile Extended', mode: 'Extended', mfg: 'Martin', layer: 'HUB - Quantum Spot' },
+                aura: { spec: 'Martin@Mac Aura XB Standard - Extended', mode: 'Standard - Extended', mfg: 'Martin', layer: 'HUB - Aura' },
+                xbar: { spec: 'Bright@XBAR 32CH', mode: '32CH', mfg: 'Bright', layer: 'HUB - XBAR' },
+                xled: { spec: 'Bright@XLED HD 10CH', mode: '10CH', mfg: 'Bright', layer: 'HUB - XLED' },
+                fresnel: { spec: 'ADB@Lexpert Fresnel M Default', mode: 'Default', mfg: 'ADB', layer: 'HUB - Front' },
+                spot: { spec: 'ADB@Lexpert Profile L Mode 5', mode: 'Mode 5', mfg: 'ADB', layer: 'HUB - Front' }
+            };
+            const tm = typeMap[pf.type] || { spec: pf.type, mode: '', mfg: '', layer: '' };
+            rows.push([pf.name || pf.type, tm.spec, tm.mode, pf.universe, pf.address].map(csvEscape).join(','));
+        }
+    });
+    
+    // Then: add all spreadsheet fixtures NOT on the page (house lights, etc.)
+    PATCH_DATA.forEach(p => {
+        if (!used.has(p[4])) {
+            const mfg = p[2].split('@')[0] || '';
+            rows.push([p[1], p[2], p[3], p[6], p[7]].map(csvEscape).join(','));
+        }
+    });
+    
+    // Sort by universe then address
+    rows.sort((a, b) => {
+        const aU = parseInt(a.split(',')[3]) || 0;
+        const bU = parseInt(b.split(',')[3]) || 0;
+        if (aU !== bU) return aU - bU;
+        const aA = parseInt(a.split(',')[4]) || 0;
+        const bA = parseInt(b.split(',')[4]) || 0;
+        return aA - bA;
+    });
+    
+    const csvText = header + '\n' + rows.join('\n');
+
+    if (format === 'xlsx') {
+        // Tab-separated values with .xls extension — Excel opens it cleanly
+        const tsvRows = [header.split(',').join('\t')];
+        rows.forEach(row => {
+            tsvRows.push(row.split(',').map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"')).join('\t'));
+        });
+        const tsv = tsvRows.join('\r\n');
+        const BOM = '\uFEFF'; // UTF-8 BOM so Excel reads characters correctly
+        const blob = new Blob([BOM + tsv], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'hub-patchlist.xls';
+        a.click();
+        URL.revokeObjectURL(url);
+    } else {
+        const blob = new Blob([csvText], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'hub-patchlist.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+}
+
+function csvEscape(val) {
+    const s = String(val == null ? '' : val);
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+}
+
+    </script>
+</body>
+</html>

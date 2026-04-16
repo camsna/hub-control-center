@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blackout Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1a1a1e;
+    color: #e8e8ec;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8e8e96;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .panic-bar {
+    margin-bottom: 24px;
+    padding: 12px;
+    background: #242428;
+    border: 1px solid #3a3a42;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .panic-btn {
+    padding: 10px 16px;
+    border: 1px solid #3a3a42;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .panic-btn.start { background: #c55a5a; border-color: #c55a5a; color: white; }
+  .panic-btn.start:hover { background: #d56a6a; }
+  .panic-btn.release { background: #2d2d32; color: #e8e8ec; }
+  .panic-btn.release:hover { background: #3a3a42; border-color: #8e8e96; }
+  .panic-note { font-size: 12px; color: #8e8e96; }
+
+  .main-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .main-btn {
+    width: 100%;
+    height: 100px;
+    border-radius: 16px;
+    border: 1px solid #3a3a42;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .main-btn.blackout { background: #2d2d32; }
+  .main-btn.blackout:hover { background: #3a3a42; border-color: #d0a040; }
+  .main-btn.lightson { background: #d0a040; border-color: #d0a040; }
+  .main-btn.lightson:hover { background: #e0b050; }
+  .main-btn:hover { transform: translateY(-2px); }
+  .main-btn:active { transform: translateY(0); }
+  .main-btn.sending { background: #4a6a8a !important; animation: pulse 0.6s ease-in-out; }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  .room-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .room-card {
+    background: #242428;
+    border: 1px solid #3a3a42;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .room-label {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e8e8ec;
+  }
+
+  .room-btns {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .room-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1px solid #3a3a42;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .room-btn.off { background: #2d2d32; color: #e8e8ec; }
+  .room-btn.off:hover { background: #3a3a42; border-color: #8e8e96; }
+  .room-btn.on { background: #d0a040; color: white; border-color: #d0a040; }
+  .room-btn.on:hover { background: #e0b050; }
+  .room-btn.sending { background: #4a6a8a !important; animation: pulse 0.6s ease-in-out; }
+
+  .truss-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .truss-card {
+    background: #242428;
+    border: 1px solid #3a3a42;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .truss-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e8e8ec;
+  }
+
+  .truss-btns {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .truss-btn {
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: 6px;
+    border: 1px solid #3a3a42;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .truss-btn.off { background: #2d2d32; color: #e8e8ec; }
+  .truss-btn.off:hover { background: #3a3a42; border-color: #8e8e96; }
+  .truss-btn.on { background: #d0a040; color: white; border-color: #d0a040; }
+  .truss-btn.on:hover { background: #e0b050; }
+  .truss-btn.sending { background: #4a6a8a !important; animation: pulse 0.6s ease-in-out; }
+
+  .universe-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .universe-card {
+    background: #242428;
+    border: 1px solid #3a3a42;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .universe-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8e8ec;
+  }
+
+  .universe-btns {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .universe-btn {
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: 6px;
+    border: 1px solid #3a3a42;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .universe-btn.off { background: #2d2d32; color: #e8e8ec; }
+  .universe-btn.off:hover { background: #3a3a42; border-color: #8e8e96; }
+  .universe-btn.on { background: #d0a040; color: white; border-color: #d0a040; }
+  .universe-btn.on:hover { background: #e0b050; }
+  .universe-btn.sending { background: #4a6a8a !important; animation: pulse 0.6s ease-in-out; }
+
+  .devices {
+    background: #242428;
+    border: 1px solid #3a3a42;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .device-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #3a3a42;
+  }
+
+  .device-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .device-row:first-child { padding-top: 0; }
+
+  .device-name { font-size: 14px; font-weight: 500; color: #e8e8ec; }
+
+  .device-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #8e8e96;
+    font-weight: 500;
+  }
+
+  .device-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #5a5a62;
+  }
+
+  .device-status.online { color: #4a9a5a; }
+  .device-status.online::before { background: #4a9a5a; }
+
+  .status { text-align: center; font-size: 13px; color: #8e8e96; min-height: 20px; }
+  .status.error { color: #c55a5a; }
+  .status.success { color: #4a9a5a; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="panic-bar">
+    <button id="panicStart" class="panic-btn start">PANIC</button>
+    <button id="panicRelease" class="panic-btn release">RELEASE</button>
+    <span id="panicNote" class="panic-note"></span>
+  </div>
+
+  <div class="main-controls">
+    <button id="blackout-all" class="main-btn blackout">Blackout All</button>
+    <button id="lightson-all" class="main-btn lightson">Lights On All</button>
+  </div>
+
+  <div class="section-title">By Room</div>
+  <div class="room-controls">
+    <div class="room-card">
+      <span class="room-label">A</span>
+      <div class="room-btns">
+        <button class="room-btn off" data-room="a" data-action="off">Off</button>
+        <button class="room-btn on" data-room="a" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="room-card">
+      <span class="room-label">B</span>
+      <div class="room-btns">
+        <button class="room-btn off" data-room="b" data-action="off">Off</button>
+        <button class="room-btn on" data-room="b" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="room-card">
+      <span class="room-label">C</span>
+      <div class="room-btns">
+        <button class="room-btn off" data-room="c" data-action="off">Off</button>
+        <button class="room-btn on" data-room="c" data-action="on">On</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">By Truss</div>
+  <div class="truss-controls">
+    <div class="truss-card">
+      <span class="truss-label">Pipe</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="pipe" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="pipe" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="truss-card">
+      <span class="truss-label">Truss 1</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="truss1" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="truss1" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="truss-card">
+      <span class="truss-label">Truss 2</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="truss2" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="truss2" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="truss-card">
+      <span class="truss-label">Truss 3</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="truss3" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="truss3" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="truss-card">
+      <span class="truss-label">Truss 4</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="truss4" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="truss4" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="truss-card">
+      <span class="truss-label">Truss 5</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="truss5" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="truss5" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="truss-card">
+      <span class="truss-label">Truss 6</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="truss6" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="truss6" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="truss-card">
+      <span class="truss-label">Truss 7</span>
+      <div class="truss-btns">
+        <button class="truss-btn off" data-truss="truss7" data-action="off">Off</button>
+        <button class="truss-btn on" data-truss="truss7" data-action="on">On</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">By Universe</div>
+  <div class="universe-controls">
+    <div class="universe-card">
+      <span class="universe-label">U1</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="1" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="1" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="universe-card">
+      <span class="universe-label">U2</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="2" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="2" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="universe-card">
+      <span class="universe-label">U3</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="3" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="3" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="universe-card">
+      <span class="universe-label">U4</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="4" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="4" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="universe-card">
+      <span class="universe-label">U5</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="5" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="5" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="universe-card">
+      <span class="universe-label">U6</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="6" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="6" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="universe-card">
+      <span class="universe-label">U7</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="7" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="7" data-action="on">On</button>
+      </div>
+    </div>
+    <div class="universe-card">
+      <span class="universe-label">U8</span>
+      <div class="universe-btns">
+        <button class="universe-btn off" data-universe="8" data-action="off">Off</button>
+        <button class="universe-btn on" data-universe="8" data-action="on">On</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Devices</div>
+  <div class="devices">
+    <div class="device-row">
+      <span class="device-name">Luminex</span>
+      <span class="device-status" id="device-luminex">-</span>
+    </div>
+    <div class="device-row">
+      <span class="device-name">CueCore A</span>
+      <span class="device-status" id="device-cuecoreA">-</span>
+    </div>
+    <div class="device-row">
+      <span class="device-name">CueCore B</span>
+      <span class="device-status" id="device-cuecoreB">-</span>
+    </div>
+    <div class="device-row">
+      <span class="device-name">CueCore C</span>
+      <span class="device-status" id="device-cuecoreC">-</span>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+(function() {
+  // Use same server as parent (no cross-origin issues)
+  var SERVER = location.host;
+  var blackoutAllBtn = document.getElementById('blackout-all');
+  var lightsOnAllBtn = document.getElementById('lightson-all');
+  var roomBtns = document.querySelectorAll('.room-btn');
+  var trussBtns = document.querySelectorAll('.truss-btn');
+  var universeBtns = document.querySelectorAll('.universe-btn');
+  var status = document.getElementById('status');
+
+  function updateDeviceStatus(devices) {
+    if (!devices) return;
+    var updateDevice = function(id, online) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.textContent = online ? 'Online' : 'Offline';
+        el.className = online ? 'device-status online' : 'device-status';
+      }
+    };
+    // Handle both formats: devices.status (from /status) or direct status
+    var s = devices.status || devices;
+    updateDevice('device-luminex', s.luminex);
+    updateDevice('device-cuecoreA', s.cuecoreA);
+    updateDevice('device-cuecoreB', s.cuecoreB);
+    updateDevice('device-cuecoreC', s.cuecoreC);
+  }
+
+  function checkConnection() {
+    fetch('http://' + SERVER + '/status', { cache: 'no-store' })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        updateDeviceStatus(data);
+      })
+      .catch(function() {});
+  }
+
+  function sendGlobalBlackout() {
+    return fetch('http://' + SERVER + '/blackout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'blackout', universes: [1,2,3,4,5,6,7,8], priority: 200 })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      status.className = 'status success';
+      status.textContent = 'Full blackout sent';
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 2000);
+    }).catch(function() {
+      status.className = 'status error';
+      status.textContent = 'Failed to send';
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 3000);
+    });
+  }
+
+  function sendGlobalLightsOn() {
+    return fetch('http://' + SERVER + '/lightson', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'on', universes: [1,2,3,4,5,6,7,8], priority: 200 })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      status.className = 'status success';
+      status.textContent = 'Full lights on sent';
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 2000);
+    }).catch(function() {
+      status.className = 'status error';
+      status.textContent = 'Failed to send';
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 3000);
+    });
+  }
+
+  function sendRoomControl(room, action) {
+    return fetch('http://' + SERVER + '/room/' + room + '/' + action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priority: 200, duration: 5000 })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      status.className = 'status success';
+      status.textContent = 'Room ' + room.toUpperCase() + ' ' + action;
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 2000);
+    }).catch(function() {
+      status.className = 'status error';
+      status.textContent = 'Failed to send';
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 3000);
+    });
+  }
+
+  function sendTrussControl(truss, action) {
+    return fetch('http://' + SERVER + '/truss/' + truss + '/' + action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priority: 200, duration: 5000 })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      status.className = 'status success';
+      status.textContent = truss.charAt(0).toUpperCase() + truss.slice(1) + ' ' + action;
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 2000);
+    }).catch(function() {
+      status.className = 'status error';
+      status.textContent = 'Failed to send';
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 3000);
+    });
+  }
+
+  function sendUniverseControl(universe, action) {
+    return fetch('http://' + SERVER + '/universe/' + universe + '/' + action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priority: 200, duration: 5000 })
+    }).then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      status.className = 'status success';
+      status.textContent = 'Universe ' + universe + ' ' + action;
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 2000);
+    }).catch(function() {
+      status.className = 'status error';
+      status.textContent = 'Failed to send';
+      setTimeout(function() { status.textContent = ''; status.className = 'status'; }, 3000);
+    });
+  }
+
+  blackoutAllBtn.addEventListener('click', function() {
+    if (blackoutAllBtn.disabled) return;
+    blackoutAllBtn.disabled = true;
+    blackoutAllBtn.classList.add('sending');
+    sendGlobalBlackout().then(function() {
+      setTimeout(function() { blackoutAllBtn.disabled = false; blackoutAllBtn.classList.remove('sending'); }, 600);
+    });
+  });
+
+  lightsOnAllBtn.addEventListener('click', function() {
+    if (lightsOnAllBtn.disabled) return;
+    lightsOnAllBtn.disabled = true;
+    lightsOnAllBtn.classList.add('sending');
+    sendGlobalLightsOn().then(function() {
+      setTimeout(function() { lightsOnAllBtn.disabled = false; lightsOnAllBtn.classList.remove('sending'); }, 600);
+    });
+  });
+
+  roomBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.classList.add('sending');
+      sendRoomControl(btn.dataset.room, btn.dataset.action).then(function() {
+        setTimeout(function() { btn.disabled = false; btn.classList.remove('sending'); }, 600);
+      });
+    });
+  });
+
+  trussBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.classList.add('sending');
+      sendTrussControl(btn.dataset.truss, btn.dataset.action).then(function() {
+        setTimeout(function() { btn.disabled = false; btn.classList.remove('sending'); }, 600);
+      });
+    });
+  });
+
+  universeBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.classList.add('sending');
+      sendUniverseControl(btn.dataset.universe, btn.dataset.action).then(function() {
+        setTimeout(function() { btn.disabled = false; btn.classList.remove('sending'); }, 600);
+      });
+    });
+  });
+
+  document.getElementById('panicStart').addEventListener('click', function() {
+    var note = document.getElementById('panicNote');
+    if (note) note.textContent = 'Sending PANIC...';
+    fetch('http://' + SERVER + '/panic/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priority: 200 })
+    }).then(function() { if (note) note.textContent = 'PANIC active (30Hz)'; })
+    .catch(function(e) { if (note) note.textContent = 'Error: ' + e.message; });
+  });
+
+  document.getElementById('panicRelease').addEventListener('click', function() {
+    var note = document.getElementById('panicNote');
+    fetch('http://' + SERVER + '/panic/release', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    }).then(function() { if (note) note.textContent = 'PANIC released'; })
+    .catch(function(e) { if (note) note.textContent = 'Error: ' + e.message; });
+  });
+
+  checkConnection();
+  setInterval(checkConnection, 5000);
+})();
+</script>
+</body>
+</html>

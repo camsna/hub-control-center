@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vegglys Finder</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1a2e; color: #eee;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    padding: 20px;
+  }
+  h1 { font-size: 1.4em; margin-bottom: 8px; color: #fff; }
+  .subtitle { color: #888; font-size: 0.9em; margin-bottom: 24px; text-align: center; }
+
+  .room-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .room-tab {
+    padding: 10px 24px; border-radius: 8px; border: 2px solid #333;
+    background: #222; color: #aaa; font-size: 1em; cursor: pointer; transition: all 0.2s;
+  }
+  .room-tab.active { border-color: #4dabf7; color: #fff; background: #1a3a5c; }
+  .room-tab:hover:not(.active) { border-color: #555; }
+
+  .status-bar {
+    background: #222; border-radius: 8px; padding: 12px 20px;
+    margin-bottom: 20px; text-align: center; font-size: 1.1em;
+    min-width: 400px; border: 1px solid #333;
+  }
+  .status-bar .fixture-num { color: #ffd43b; font-weight: bold; font-size: 1.4em; }
+  .status-bar .addr { color: #888; font-size: 0.9em; }
+  .status-bar .state-on { color: #51cf66; }
+  .status-bar .state-off { color: #ff6b6b; font-weight: bold; }
+
+  .controls { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .nav-btn {
+    width: 56px; height: 56px; border-radius: 50%; border: 2px solid #4dabf7;
+    background: #1a3a5c; color: #4dabf7; font-size: 1.6em; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; user-select: none;
+  }
+  .nav-btn:hover { background: #4dabf7; color: #fff; }
+  .nav-btn:active { transform: scale(0.95); }
+  .slider-container { flex: 1; max-width: 400px; }
+  .slider-container input[type="range"] {
+    width: 100%; height: 8px; -webkit-appearance: none; appearance: none;
+    background: #333; border-radius: 4px; outline: none;
+  }
+  .slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+    background: #4dabf7; cursor: pointer;
+  }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px;
+    max-width: 720px; width: 100%; margin-bottom: 20px;
+  }
+  .cell {
+    aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center;
+    justify-content: center; font-size: 0.7em; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; user-select: none;
+    border: 2px solid transparent; flex-direction: column; line-height: 1.2;
+  }
+  .cell .label { font-size: 0.65em; color: #aaa; margin-top: 1px; }
+  .cell.on { background: #2b8a3e; color: #fff; }
+  .cell.off { background: #c92a2a; color: #fff; border-color: #ff6b6b; }
+  .cell.current { border-color: #ffd43b; box-shadow: 0 0 8px rgba(255, 212, 59, 0.5); }
+  .cell.tagged { position: relative; }
+  .cell.tagged::after {
+    content: attr(data-tag); position: absolute; top: -2px; right: 1px;
+    font-size: 0.55em; color: #ffd43b; font-weight: bold;
+  }
+
+  .row-colors { display: flex; gap: 0; margin-bottom: 2px; }
+  .row-colors .swatch {
+    width: 12px; height: 12px; border-radius: 2px;
+  }
+
+  .tag-bar {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;
+    align-items: center;
+  }
+  .tag-bar label { color: #aaa; font-size: 0.85em; margin-right: 4px; }
+  .row-btn {
+    padding: 8px 20px; border-radius: 6px; border: 2px solid #555;
+    background: #222; color: #ddd; cursor: pointer; font-size: 0.95em;
+    transition: all 0.15s; font-weight: 600; min-width: 64px; text-align: center;
+  }
+  .row-btn:hover { border-color: #aaa; }
+  .row-btn.r1 { border-color: #e03131; color: #ff6b6b; }
+  .row-btn.r1:hover, .row-btn.r1.active { background: #e03131; color: #fff; }
+  .row-btn.r2 { border-color: #f08c00; color: #ffa94d; }
+  .row-btn.r2:hover, .row-btn.r2.active { background: #f08c00; color: #fff; }
+  .row-btn.r3 { border-color: #2f9e44; color: #69db7c; }
+  .row-btn.r3:hover, .row-btn.r3.active { background: #2f9e44; color: #fff; }
+  .row-btn.r4 { border-color: #1c7ed6; color: #74c0fc; }
+  .row-btn.r4:hover, .row-btn.r4.active { background: #1c7ed6; color: #fff; }
+  .row-btn.clear { border-color: #555; color: #888; font-size: 0.8em; }
+  .row-btn.clear:hover { background: #555; color: #fff; }
+
+  .action-bar {
+    display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;
+  }
+  .action-btn {
+    padding: 8px 16px; border-radius: 6px; border: 1px solid #555;
+    background: #333; color: #ddd; cursor: pointer; font-size: 0.85em; transition: all 0.15s;
+  }
+  .action-btn:hover { background: #444; }
+  .action-btn.danger { border-color: #c92a2a; color: #ff6b6b; }
+  .action-btn.danger:hover { background: #c92a2a; color: #fff; }
+  .action-btn.primary { border-color: #4dabf7; color: #4dabf7; }
+  .action-btn.primary:hover { background: #4dabf7; color: #fff; }
+  .action-btn.success { border-color: #51cf66; color: #51cf66; }
+  .action-btn.success:hover { background: #2b8a3e; color: #fff; }
+
+  .results {
+    background: #222; border-radius: 8px; padding: 16px; max-width: 720px;
+    width: 100%; border: 1px solid #333; margin-bottom: 16px;
+  }
+  .results h3 { color: #ffd43b; margin-bottom: 8px; font-size: 0.95em; }
+  .results .room-result { margin-bottom: 8px; }
+  .results .room-result strong { color: #ccc; }
+  .results .row-line { font-family: monospace; font-size: 0.9em; margin-left: 12px; color: #aaa; }
+  .results .row-line .r1 { color: #ff6b6b; }
+  .results .row-line .r2 { color: #ffa94d; }
+  .results .row-line .r3 { color: #69db7c; }
+  .results .row-line .r4 { color: #74c0fc; }
+  .results .empty { color: #666; font-style: italic; }
+  .results .untagged { color: #888; }
+
+  .connection {
+    position: fixed; top: 8px; right: 12px; font-size: 0.75em;
+    padding: 4px 10px; border-radius: 12px; background: #222; border: 1px solid #333;
+  }
+  .connection.ok { color: #51cf66; border-color: #2b8a3e; }
+  .connection.err { color: #ff6b6b; border-color: #c92a2a; }
+
+  .keyboard-hint {
+    color: #666; font-size: 0.75em; margin-top: 8px; text-align: center;
+  }
+
+  .color-preview {
+    display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+    vertical-align: middle; margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Vegglys Finder</h1>
+<p class="subtitle">Only the active fixture is ON. Tag each with its row (1=top, 3=bottom).</p>
+
+<div class="room-tabs">
+  <button class="room-tab active" data-universe="6" data-count="48">Sal A · 48</button>
+  <button class="room-tab" data-universe="7" data-count="60">Sal B · 60</button>
+  <button class="room-tab" data-universe="8" data-count="51">Sal C · 51</button>
+</div>
+
+<div class="status-bar">
+  Fixture <span class="fixture-num" id="currentFixture">1</span>
+  <span class="addr" id="currentAddr">(ch 211–215)</span>
+  — <span class="state-on" id="currentState">ON (only this one lit)</span>
+</div>
+
+<div class="controls">
+  <button class="nav-btn" id="prevBtn">◀</button>
+  <div class="slider-container">
+    <input type="range" id="fixtureSlider" min="1" max="48" value="1">
+  </div>
+  <button class="nav-btn" id="nextBtn">▶</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="tag-bar">
+  <label>Tag row:</label>
+  <button class="row-btn r1" data-row="1">Row 1 (top)</button>
+  <button class="row-btn r2" data-row="2">Row 2</button>
+  <button class="row-btn r3" data-row="3">Row 3 (bottom)</button>
+  
+  <button class="row-btn clear" data-row="0">✕ Clear</button>
+</div>
+
+<div class="action-bar">
+  <button class="action-btn" id="allWhiteBtn">All White</button>
+  <button class="action-btn danger" id="allOffBtn">All OFF</button>
+  <button class="action-btn primary" id="autoNextBtn">Auto-Advance: OFF</button>
+  <button class="action-btn success" id="copyBtn">Copy Results</button>
+</div>
+
+
+<div id="rowModeBar" style="display:none; background:#1a3a5c; border:2px solid #4dabf7; border-radius:8px; padding:10px 16px; margin-bottom:16px; max-width:720px; width:100%; align-items:center; justify-content:space-between;">
+  <button class="nav-btn" onclick="rowPrev()" style="width:40px;height:40px;font-size:1.2em">◀</button>
+  <span id="rowModeLabel" style="color:#fff;font-weight:600;font-size:0.95em"></span>
+  <button class="nav-btn" onclick="rowNext()" style="width:40px;height:40px;font-size:1.2em">▶</button>
+  <button class="action-btn" onclick="exitRowMode()" style="margin-left:8px">✕ Exit Row</button>
+</div>
+
+<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;justify-content:center;" id="rowSelectBar">
+  <span style="color:#888;font-size:0.8em;width:100%;text-align:center;margin-bottom:4px">Step through a row (left→right):</span>
+  <button class="action-btn" onclick="enterRowMode('1-up')" style="font-size:0.8em">R1 ↑</button>
+  <button class="action-btn" onclick="enterRowMode('1-down')" style="font-size:0.8em">R1 ↓</button>
+  <button class="action-btn" onclick="enterRowMode('2-up')" style="font-size:0.8em">R2 ↑</button>
+  <button class="action-btn" onclick="enterRowMode('2-down')" style="font-size:0.8em">R2 ↓</button>
+  <button class="action-btn" onclick="enterRowMode('3-up')" style="font-size:0.8em">R3 ↑</button>
+  <button class="action-btn" onclick="enterRowMode('3-down')" style="font-size:0.8em">R3 ↓</button>
+</div>
+<div class="results" id="results">
+  <h3>Vegglys Layout Map</h3>
+  <div id="resultContent"><span class="empty">Tag fixtures to build the map</span></div>
+</div>
+
+<p class="keyboard-hint">← → navigate &nbsp;|&nbsp; 1 2 3 = tag row &nbsp;|&nbsp; 0 = clear tag &nbsp;|&nbsp; A/B/C = switch room &nbsp;|&nbsp; N = toggle auto-advance</p>
+
+<div class="connection" id="connStatus">connecting...</div>
+
+<script>
+const API = window.location.origin;
+const PRIORITY = 190;
+const DURATION = 30000;
+const VEGG_START = 211;
+const VEGG_CH_PER = 5;  // 5 channels per fixture
+const ROW_COLORS = { 1: '#e03131', 2: '#f08c00', 3: '#2f9e44' };
+const ROW_LABELS = { 1: 'Row 1 (top)', 2: 'Row 2 (middle)', 3: 'Row 3 (bottom)' };
+
+const ROOM_COUNTS = { 6: 48, 7: 60, 8: 51 };
+
+let currentUniverse = 6;
+let currentFixture = 1;
+let autoAdvance = false;
+
+// Tags: { universe: { fixtureIndex: rowNumber } }
+const tags = { 6: {}, 7: {}, 8: {} };
+
+// Try to load saved tags from localStorage
+try {
+  const saved = localStorage.getItem('vegglys-tags');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    [6, 7, 8].forEach(u => { if (parsed[u]) tags[u] = parsed[u]; });
+  }
+} catch (e) {}
+
+function saveTags() {
+  localStorage.setItem('vegglys-tags', JSON.stringify(tags));
+}
+
+function getCount() { return ROOM_COUNTS[currentUniverse]; }
+function getAddress(fixture) { return VEGG_START + (fixture - 1) * VEGG_CH_PER; }
+
+// --- DOM ---
+const grid = document.getElementById('grid');
+const slider = document.getElementById('fixtureSlider');
+const fixtureDisplay = document.getElementById('currentFixture');
+const addrDisplay = document.getElementById('currentAddr');
+
+function buildGrid() {
+  grid.innerHTML = '';
+  const count = getCount();
+  // Use 12 columns for up to 60 fixtures (5 rows of 12)
+  const cols = 12;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  for (let i = 1; i <= count; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell on';
+    cell.dataset.fixture = i;
+    const addr = getAddress(i);
+    cell.innerHTML = `<span>${i}</span>`;
+    cell.addEventListener('click', () => goToFixture(i));
+    grid.appendChild(cell);
+  }
+  slider.max = count;
+  if (currentFixture > count) currentFixture = 1;
+  slider.value = currentFixture;
+}
+
+// --- Room tabs ---
+document.querySelectorAll('.room-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelector('.room-tab.active').classList.remove('active');
+    tab.classList.add('active');
+    currentUniverse = parseInt(tab.dataset.universe);
+    buildGrid();
+    goToFixture(1);
+  });
+});
+
+// --- Navigation ---
+function goToFixture(n) {
+  const count = getCount();
+  currentFixture = Math.max(1, Math.min(count, n));
+  slider.value = currentFixture;
+  sendState();
+  updateUI();
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => goToFixture(currentFixture - 1));
+document.getElementById('nextBtn').addEventListener('click', () => goToFixture(currentFixture + 1));
+slider.addEventListener('input', () => goToFixture(parseInt(slider.value)));
+
+// --- Tagging ---
+document.querySelectorAll('.row-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const row = parseInt(btn.dataset.row);
+    if (row === 0) {
+      delete tags[currentUniverse][currentFixture];
+    } else {
+      tags[currentUniverse][currentFixture] = row;
+    }
+    saveTags();
+    updateUI();
+    if (autoAdvance && row > 0) {
+      setTimeout(() => goToFixture(currentFixture + 1), 150);
+    }
+  });
+});
+
+// Auto-advance toggle
+const autoBtn = document.getElementById('autoNextBtn');
+autoBtn.addEventListener('click', () => {
+  autoAdvance = !autoAdvance;
+  autoBtn.textContent = autoAdvance ? 'Auto-Advance: ON' : 'Auto-Advance: OFF';
+  autoBtn.style.borderColor = autoAdvance ? '#51cf66' : '#4dabf7';
+  autoBtn.style.color = autoAdvance ? '#51cf66' : '#4dabf7';
+});
+
+// --- Keyboard ---
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') { e.preventDefault(); if (rowMode) rowPrev(); else goToFixture(currentFixture - 1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); if (rowMode) rowNext(); else goToFixture(currentFixture + 1); }
+  else if (e.key === 'Escape') { exitRowMode(); }
+  else if (e.key === '1') document.querySelector('.row-btn.r1').click();
+  else if (e.key === '2') document.querySelector('.row-btn.r2').click();
+  else if (e.key === '3') document.querySelector('.row-btn.r3').click();
+    else if (e.key === '0') document.querySelector('.row-btn.clear').click();
+  else if (e.key.toLowerCase() === 'a') document.querySelector('[data-universe="6"]').click();
+  else if (e.key.toLowerCase() === 'b') document.querySelector('[data-universe="7"]').click();
+  else if (e.key.toLowerCase() === 'c') document.querySelector('[data-universe="8"]').click();
+  else if (e.key.toLowerCase() === 'n') autoBtn.click();
+});
+
+// --- DMX ---
+async function sendState() {
+  // All vegglys white except current one = RED (to identify it)
+  const count = getCount();
+  const channels = {};
+  for (let i = 1; i <= count; i++) {
+    const addr = getAddress(i);
+    if (i === currentFixture) {
+      // Current fixture: bright white (only one ON)
+      channels[addr] = 255;       // Dimmer
+      channels[addr + 1] = 255;   // R
+      channels[addr + 2] = 255;   // G
+      channels[addr + 3] = 255;   // B
+      channels[addr + 4] = 255;   // W
+    } else {
+      // All others: OFF
+      channels[addr] = 0;
+      channels[addr + 1] = 0;
+      channels[addr + 2] = 0;
+      channels[addr + 3] = 0;
+      channels[addr + 4] = 0;
+    }
+  }
+
+  try {
+    const resp = await fetch(API + '/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        [currentUniverse]: channels,
+        priority: PRIORITY,
+        duration: DURATION
+      })
+    });
+    const data = await resp.json();
+    setConnStatus(data.ok);
+  } catch (err) {
+    console.error('DMX send failed:', err);
+    setConnStatus(false);
+  }
+}
+
+document.getElementById('allWhiteBtn').addEventListener('click', async () => {
+  const count = getCount();
+  const channels = {};
+  for (let i = 1; i <= count; i++) {
+    const addr = getAddress(i);
+    channels[addr] = 255;
+    channels[addr + 1] = 255;
+    channels[addr + 2] = 255;
+    channels[addr + 3] = 255;
+    channels[addr + 4] = 255;
+  }
+  try {
+    await fetch(API + '/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [currentUniverse]: channels, priority: PRIORITY, duration: DURATION })
+    });
+  } catch (err) { console.error(err); }
+});
+
+document.getElementById('allOffBtn').addEventListener('click', async () => {
+  const count = getCount();
+  const channels = {};
+  for (let i = 1; i <= count; i++) {
+    const addr = getAddress(i);
+    for (let c = 0; c < 5; c++) channels[addr + c] = 0;
+  }
+  try {
+    await fetch(API + '/channels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [currentUniverse]: channels, priority: PRIORITY, duration: DURATION })
+    });
+  } catch (err) { console.error(err); }
+});
+
+// --- UI ---
+function updateUI() {
+  const count = getCount();
+  const addr = getAddress(currentFixture);
+  fixtureDisplay.textContent = currentFixture + ' / ' + count;
+  addrDisplay.textContent = `(U${currentUniverse} ch ${addr}–${addr + 4})`;
+
+  // Grid
+  grid.querySelectorAll('.cell').forEach(cell => {
+    const n = parseInt(cell.dataset.fixture);
+    const isCurrent = n === currentFixture;
+    const row = tags[currentUniverse][n];
+    let cls = 'cell ' + (isCurrent ? 'off current' : 'on');
+    if (row) {
+      cls += ' tagged';
+      cell.dataset.tag = 'R' + row;
+      // Tint the cell background by row color
+      const color = ROW_COLORS[row];
+      cell.style.background = isCurrent ? '#c92a2a' : color;
+    } else {
+      cell.dataset.tag = '';
+      cell.style.background = '';
+    }
+    cell.className = cls;
+  });
+
+  updateResults();
+}
+
+function updateResults() {
+  const content = document.getElementById('resultContent');
+  let html = '';
+  [6, 7, 8].forEach(u => {
+    const room = u === 6 ? 'Sal A' : u === 7 ? 'Sal B' : 'Sal C';
+    const count = ROOM_COUNTS[u];
+    const roomTags = tags[u];
+    html += `<div class="room-result"><strong>${room} (U${u}) — ${count} fixtures</strong><br>`;
+
+    const byRow = { 1: [], 2: [], 3: [], untagged: [] };
+    for (let i = 1; i <= count; i++) {
+      const row = roomTags[i];
+      if (row) byRow[row].push(i);
+      else byRow.untagged.push(i);
+    }
+
+    [1, 2, 3].forEach(r => {
+      if (byRow[r].length > 0) {
+        const addrs = byRow[r].map(i => getAddress(i));
+        html += `<div class="row-line"><span class="r${r}">Row ${r}:</span> fixtures ${byRow[r].join(', ')} (addr ${addrs.join(', ')})</div>`;
+      }
+    });
+    if (byRow.untagged.length > 0) {
+      html += `<div class="row-line untagged">Untagged: ${byRow.untagged.length} remaining</div>`;
+    }
+    html += '</div>';
+  });
+  content.innerHTML = html;
+}
+
+function setConnStatus(ok) {
+  const el = document.getElementById('connStatus');
+  el.textContent = ok ? 'connected' : 'disconnected';
+  el.className = 'connection ' + (ok ? 'ok' : 'err');
+}
+
+function copyResults() {
+  const lines = [];
+  [6, 7, 8].forEach(u => {
+    const room = u === 6 ? 'Sal A' : u === 7 ? 'Sal B' : 'Sal C';
+    const count = ROOM_COUNTS[u];
+    const roomTags = tags[u];
+    lines.push(`${room} (U${u}):`);
+
+    const byRow = { 1: [], 2: [], 3: [] };
+    for (let i = 1; i <= count; i++) {
+      const row = roomTags[i];
+      if (row) byRow[row].push(i);
+    }
+    [1, 2, 3].forEach(r => {
+      if (byRow[r].length > 0) {
+        const addrs = byRow[r].map(i => getAddress(i));
+        lines.push(`  Row ${r}: fixtures [${byRow[r].join(', ')}] addr [${addrs.join(', ')}]`);
+      }
+    });
+  });
+  navigator.clipboard.writeText(lines.join('\n')).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy Results', 1500);
+  });
+}
+document.getElementById('copyBtn').addEventListener('click', copyResults);
+
+
+// === VEGGLYS LAYOUT DATA (mapped on-site 2026-03-18) ===
+const VEGGLYS_LAYOUT = {
+  6: { // Sal A
+    "1-up": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "1-down": [11, 13, 15, 17, 19, 21, 23, 25],
+    "2-up": [14, 16, 18, 20, 22, 24, 26],
+    "2-down": [27, 28, 30, 32, 34, 36, 38, 40],
+    "3-up": [29, 31, 33, 35, 37, 41],
+    "3-down": [42, 43, 44, 45, 46, 47, 48]
+  },
+  7: { // Sal B
+    "1-up": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "1-down": [11, 13, 15, 17, 19, 21, 23, 25, 27, 29],
+    "2-up": [12, 14, 16, 18, 20, 22, 24, 26, 28, 30],
+    "2-down": [31, 33, 35, 37, 39, 41, 43, 45, 47, 48],
+    "3-up": [32, 34, 36, 38, 40, 42, 44, 46],
+    "3-down": [50, 51, 52, 53, 54, 55, 56, 57, 58]
+  },
+  8: { // Sal C
+    "1-up": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "1-down": [11, 13, 15, 17, 19, 21, 23, 25, 27],
+    "2-up": [10, 12, 14, 16, 18, 20, 22, 24],
+    "2-down": [29, 31, 33, 35, 37, 39, 41, 43, 44],
+    "3-up": [28, 30, 32, 34, 36, 38, 40, 42],
+    "3-down": [45, 46, 47, 48, 49, 50, 51]
+  }
+};
+
+// Row-stepping mode
+let rowMode = null;  // e.g. "1-up"
+let rowIndex = 0;
+
+function enterRowMode(key) {
+  const layout = VEGGLYS_LAYOUT[currentUniverse];
+  if (!layout || !layout[key] || layout[key].length === 0) return;
+  rowMode = key;
+  rowIndex = 0;
+  goToFixture(layout[key][0]);
+  updateRowModeUI();
+}
+
+function exitRowMode() {
+  rowMode = null;
+  updateRowModeUI();
+}
+
+function rowNext() {
+  if (!rowMode) return;
+  const fixtures = VEGGLYS_LAYOUT[currentUniverse][rowMode];
+  if (rowIndex < fixtures.length - 1) {
+    rowIndex++;
+    goToFixture(fixtures[rowIndex]);
+  }
+  updateRowModeUI();
+}
+
+function rowPrev() {
+  if (!rowMode) return;
+  const fixtures = VEGGLYS_LAYOUT[currentUniverse][rowMode];
+  if (rowIndex > 0) {
+    rowIndex--;
+    goToFixture(fixtures[rowIndex]);
+  }
+  updateRowModeUI();
+}
+
+function updateRowModeUI() {
+  const bar = document.getElementById('rowModeBar');
+  if (!rowMode) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
+  const fixtures = VEGGLYS_LAYOUT[currentUniverse][rowMode];
+  const parts = rowMode.split('-');
+  const label = 'Row ' + parts[0] + ' ' + parts[1].toUpperCase();
+  document.getElementById('rowModeLabel').textContent = 
+    label + ' — position ' + (rowIndex + 1) + '/' + fixtures.length + 
+    ' (fixture ' + fixtures[rowIndex] + ') — LEFT→RIGHT';
+}
+
+// --- Init ---
+buildGrid();
+fetch(API + '/status')
+  .then(r => r.json())
+  .then(() => { setConnStatus(true); sendState(); updateUI(); })
+  .catch(() => setConnStatus(false));
+updateUI();
+</script>
+</body>
+</html>

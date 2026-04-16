@@ -1,0 +1,265 @@
+{
+  "sal_a": {
+    "universe": 6,
+    "total_fixtures": 48,
+    "vegg_start": 211,
+    "ch_per_fixture": 5,
+    "wall": "side wall (90deg CCW from stage, front wall when rooms are separate)",
+    "rows": {
+      "1": {
+        "up": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "down": [
+          11,
+          13,
+          15,
+          17,
+          19,
+          21,
+          23,
+          25
+        ]
+      },
+      "2": {
+        "up": [
+          14,
+          16,
+          18,
+          20,
+          22,
+          24,
+          26
+        ],
+        "down": [
+          27,
+          28,
+          30,
+          32,
+          34,
+          36,
+          38,
+          40
+        ]
+      },
+      "3": {
+        "up": [
+          29,
+          31,
+          33,
+          35,
+          37,
+          41
+        ],
+        "down": [
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48
+        ]
+      }
+    },
+    "gaps": {
+      "10": "does not exist",
+      "12": "door location",
+      "39": "door/gap"
+    },
+    "dead": {
+      "44": "probably Row 3 Down, bad/dead fixture",
+      "31": "Row 3 Up, dead fixture",
+      "35": "Row 3 Up, dead fixture"
+    }
+  },
+  "sal_b": {
+    "universe": 7,
+    "total_fixtures": 60,
+    "vegg_start": 211,
+    "ch_per_fixture": 5,
+    "wall": "side wall (90deg CCW from stage, front wall when rooms are separate)",
+    "rows": {
+      "1": {
+        "up": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "down": [
+          11,
+          13,
+          15,
+          17,
+          19,
+          21,
+          23,
+          25,
+          27,
+          29
+        ]
+      },
+      "2": {
+        "up": [
+          12,
+          14,
+          16,
+          18,
+          20,
+          22,
+          24,
+          26,
+          28,
+          30
+        ],
+        "down": [
+          31,
+          33,
+          35,
+          37,
+          39,
+          41,
+          43,
+          45,
+          47,
+          48
+        ]
+      },
+      "3": {
+        "up": [
+          32,
+          34,
+          36,
+          38,
+          40,
+          42,
+          44,
+          46
+        ],
+        "down": [
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58
+        ]
+      }
+    },
+    "gaps": {
+      "49": "door/gap",
+      "59": "door/gap",
+      "60": "door/gap"
+    },
+    "dead": {
+      "52": "Row 3 Down, dead fixture \u2014 may correspond to dead 44 in Sal A"
+    }
+  },
+  "sal_c": {
+    "universe": 8,
+    "total_fixtures": 51,
+    "vegg_start": 211,
+    "ch_per_fixture": 5,
+    "wall": "side wall (90deg CCW from stage, front wall when rooms are separate)",
+    "rows": {
+      "1": {
+        "up": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "down": [
+          11,
+          13,
+          15,
+          17,
+          19,
+          21,
+          23,
+          25,
+          27
+        ]
+      },
+      "2": {
+        "up": [
+          10,
+          12,
+          14,
+          16,
+          18,
+          20,
+          22,
+          24
+        ],
+        "down": [
+          29,
+          31,
+          33,
+          35,
+          37,
+          39,
+          41,
+          43,
+          44
+        ]
+      },
+      "3": {
+        "up": [
+          28,
+          30,
+          32,
+          34,
+          36,
+          38,
+          40,
+          42
+        ],
+        "down": [
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51
+        ]
+      }
+    },
+    "gaps": {
+      "26": "gap"
+    },
+    "quirks": {
+      "20": "turning on fixture 20 also turns on fixture 21 (linked/double-patched)"
+    },
+    "dead": {
+      "15": "Row 1 Down, dead fixture",
+      "21": "Row 1 Down, dead fixture",
+      "22": "Row 2 Up, dead fixture",
+      "42": "Row 3 Up, dead fixture"
+    }
+  }
+}

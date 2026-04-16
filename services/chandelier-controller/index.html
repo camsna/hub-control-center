@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lysekrone — Clarion Hotel The Hub</title>
+<style>
+:root {
+  --bg: #1a1a1e; --panel: #242428; --card: #2d2d32; --hover: #38383f;
+  --border: #3a3a42; --text: #e8e8ec; --dim: #8e8e96; --accent: #4a9eff;
+  --on: #34c759; --off: #ff3b30; --warn: #ff9500;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--panel);border-bottom:1px solid var(--border)}
+.hdr h1{font-size:1.1rem;font-weight:600}
+.hdr .sub{color:var(--dim);font-size:.7rem}
+.sts{display:flex;gap:.75rem;align-items:center;font-size:.75rem}
+.sts-item{display:flex;align-items:center;gap:4px;cursor:help}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot.g{background:var(--on)}.dot.r{background:var(--off)}.dot.y{background:var(--warn);animation:p 1.5s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+.sts-label{color:var(--dim);font-size:.7rem}
+
+.toast{position:fixed;top:1rem;right:1rem;padding:.5rem 1rem;border-radius:6px;font-size:.8rem;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.ok{background:rgba(52,199,89,.2);border:1px solid var(--on);color:var(--on);opacity:1}
+.toast.err{background:rgba(255,59,48,.2);border:1px solid var(--off);color:var(--off);opacity:1}
+
+.dc-bar{display:none;padding:.5rem 1rem;background:rgba(255,59,48,.05);border-bottom:1px solid var(--border);font-size:.8rem;color:var(--dim);text-align:center}
+.dc-bar.vis{display:block}
+.dc-bar.err{background:rgba(255,59,48,.1);border-color:var(--off);color:var(--off)}
+
+.err-bar{display:none;padding:.5rem 1rem;background:rgba(255,59,48,.1);border-bottom:1px solid var(--off);font-size:.8rem;color:var(--off)}
+.err-bar.vis{display:flex;align-items:center;gap:.75rem}
+.err-bar .msg{flex:1}
+
+.gbar{display:flex;gap:.5rem;padding:.5rem 1rem;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.gbtn{padding:.35rem .75rem;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:.75rem;font-family:inherit;transition:all .15s}
+.gbtn:hover{border-color:var(--accent);background:var(--hover)}
+.gbtn.w{border-color:var(--warn);color:var(--warn)}.gbtn.w:hover{background:rgba(255,149,0,.1)}
+.gbtn.conn{border-color:var(--on);color:var(--on)}.gbtn.conn:hover{background:rgba(52,199,89,.1)}
+.gbtn.dc{border-color:var(--off);color:var(--off)}.gbtn.dc:hover{background:rgba(255,59,48,.1)}
+.gbar-spacer{flex:1}
+
+.console{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);flex:1}
+@media(max-width:900px){.console{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:500px){.console{grid-template-columns:repeat(2,1fr)}}
+
+.ch{background:var(--panel);display:flex;flex-direction:column;min-width:0}
+.ch-top{padding:.5rem;text-align:center;border-bottom:1px solid var(--border)}
+.ch-num{font-size:1.4rem;font-weight:700;line-height:1;color:var(--dim)}
+.ch-num.on{color:var(--on)}
+.ch-num.err{color:var(--off)}
+
+.toggles{display:flex;gap:2px;padding:2px}
+.tgl{flex:1;padding:.35rem 0;border:none;font-size:.65rem;font-weight:600;font-family:inherit;cursor:pointer;text-transform:uppercase;letter-spacing:.3px;background:var(--card);color:var(--dim)}
+.tgl.on{background:rgba(52,199,89,.15);color:var(--on)}
+
+.ring{border-top:1px solid var(--border);padding:3px}
+.ring-hdr{display:flex;align-items:center;padding:2px 4px;gap:4px}
+.ring-name{font-size:.6rem;font-weight:600;color:var(--dim);flex:1;text-transform:uppercase;letter-spacing:.5px}
+.ring-avg{font-size:.65rem;color:var(--dim);font-family:'SF Mono','Fira Code',monospace}
+.ring-jog{display:flex;gap:2px}
+
+.mtr{display:flex;align-items:center;padding:2px 4px;gap:4px;border-radius:3px}
+.mtr.has-err{background:rgba(255,59,48,.08)}
+.mtr-id{font-size:.6rem;color:var(--dim);width:14px}
+.mtr-pos{font-family:'SF Mono','Fira Code',monospace;font-size:.75rem;flex:1;text-align:right}
+.mtr-ind{display:flex;gap:2px;align-items:center}
+.ind{width:5px;height:5px;border-radius:50%;border:1px solid var(--border)}
+.ind.u-on{background:var(--warn);border-color:var(--warn)}
+.ind.l-on{background:var(--accent);border-color:var(--accent)}
+.ind.e-on{background:var(--off);border-color:var(--off)}
+.mtr-jog{display:flex;gap:1px}
+
+.jb{width:22px;height:18px;border-radius:3px;border:1px solid var(--border);background:var(--card);color:var(--dim);cursor:pointer;font-size:.6rem;display:flex;align-items:center;justify-content:center;user-select:none;padding:0}
+.jb.up:active{background:rgba(52,199,89,.25);border-color:var(--on)}
+.jb.dn:active{background:rgba(255,59,48,.2);border-color:var(--off)}
+
+.ch-jog{display:flex;gap:2px;padding:3px;border-top:1px solid var(--border)}
+.ch-jb{flex:1;padding:.3rem 0;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--dim);cursor:pointer;font-size:.65rem;font-family:inherit;text-align:center;user-select:none}
+.ch-jb.up:active{background:rgba(52,199,89,.2);border-color:var(--on)}
+.ch-jb.dn:active{background:rgba(255,59,48,.15);border-color:var(--off)}
+
+/* Event log */
+.log-wrap{background:var(--panel);border-top:1px solid var(--border)}
+.log-hdr{display:flex;align-items:center;padding:.4rem 1rem;cursor:pointer;user-select:none}
+.log-hdr span{font-size:.7rem;font-weight:600;color:var(--dim);flex:1;text-transform:uppercase;letter-spacing:.5px}
+.log-hdr .log-badge{background:var(--off);color:#fff;font-size:.6rem;padding:1px 5px;border-radius:8px;display:none}
+.log-hdr .log-badge.vis{display:inline}
+.log-hdr .log-toggle{font-size:.6rem;color:var(--dim)}
+.log-body{max-height:0;overflow:hidden;transition:max-height .2s}
+.log-body.open{max-height:200px;overflow-y:auto}
+.log-entry{padding:2px 1rem;font-size:.7rem;font-family:'SF Mono','Fira Code',monospace;border-top:1px solid var(--border)}
+.log-entry .log-time{color:var(--dim);margin-right:.5rem}
+.log-entry.err{color:var(--off)}
+.log-entry.warn{color:var(--warn)}
+.log-entry.info{color:var(--dim)}
+.log-entry.ok{color:var(--on)}
+
+.footer{text-align:center;padding:.5rem;color:var(--dim);font-size:.6rem;background:var(--panel);border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><h1>Lysekrone</h1><div class="sub">Clarion Hotel The Hub</div></div>
+  <div class="sts">
+    <div class="sts-item" title="Connection to Beckhoff PLC controller">
+      <span class="sts-label">Connected</span><div class="dot" id="connDot"></div>
+    </div>
+    <div class="sts-item" title="Safe Torque Off — hardware safety circuit. Green = safety OK, motors can run. Red = safety tripped, all motors locked.">
+      <span class="sts-label">Safety</span><div class="dot" id="stoDot"></div>
+    </div>
+    <div class="sts-item" title="PLC program state: Running = normal operation, Stopped/Config = motors won't respond">
+      <span id="plcLbl" class="sts-label"></span>
+    </div>
+  </div>
+</div>
+
+<div class="dc-bar" id="dcBar"></div>
+
+<div class="err-bar" id="errBar">
+  <span class="msg" id="errMsg"></span>
+  <button class="gbtn w" id="resetErrBtn" onclick="doReset()">Reset</button>
+</div>
+
+<div class="gbar">
+  <button class="gbtn" id="connBtn" onclick="toggleConnection()">Connect</button>
+  <div class="gbar-spacer"></div>
+</div>
+
+<div class="console" id="console"></div>
+
+<div class="log-wrap">
+  <div class="log-hdr" onclick="toggleLog()">
+    <span>Event Log</span>
+    <span class="log-badge" id="logBadge">0</span>
+    <span class="log-toggle" id="logClear" onclick="clearLog();event.stopPropagation()" style="margin-right:8px;cursor:pointer">Clear</span><span class="log-toggle" id="logToggle">Show</span>
+  </div>
+  <div class="log-body" id="logBody"></div>
+</div>
+
+<div class="footer">Hub Technical — Chandelier Control via Beckhoff ADS</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const WS=`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`;
+let ws,S={connected:false,intentionalDisconnect:false};
+let built=false;
+let activeJog=null;
+let logOpen=false;
+let unseenErrors=0;
+let prevConnected=null;
+let prevErrors=new Set();
+
+// Beckhoff NC axis error code lookup
+function errorText(code){
+  if(!code)return"";
+  const errors={
+    // NC general
+    16384:"Internal NC error",
+    16385:"Internal NC error",
+    16386:"Internal NC error",
+    // Limit switches
+    16897:"Negative limit switch hit",
+    16898:"Positive limit switch hit",
+    16899:"Both limit switches active",
+    // Following error
+    16912:"Following error — motor cannot reach target",
+    16913:"Following error at standstill — motor drifted from position",
+    16914:"Following error while moving — motor fell behind",
+    // Position limits
+    16976:"Below minimum position limit",
+    16977:"Above maximum position limit",
+    16992:"Software lower limit reached",
+    16993:"Software upper limit reached",
+    // Drive
+    17024:"Drive not ready",
+    17025:"Drive not ready — standstill",
+    17026:"Drive not ready — velocity",
+    17040:"Drive communication error",
+    17152:"Drive fault",
+    17168:"Axis not enabled",
+    17169:"Axis not stopped",
+    17170:"Axis in error state",
+    // Timeout
+    17408:"Command timeout",
+    17409:"Timeout waiting for axis ready",
+    // Encoder
+    16640:"Encoder error",
+    16641:"Encoder communication error",
+    16642:"Encoder signal lost",
+    16643:"Encoder reference missing",
+    // Motion
+    16656:"Velocity limit exceeded",
+    16657:"Acceleration limit exceeded",
+    16704:"Motor stalled or overloaded",
+    // Homing
+    17664:"Homing error",
+    17665:"Homing timeout",
+    17666:"Homing — limit switch not found",
+    // I/O
+    16896:"I/O level error",
+    16900:"I/O data invalid",
+  };
+  return errors[code]||("Unknown error "+code);
+}
+
+
+// Event log
+const MAX_LOG=100;
+function logEvent(msg,cls='info'){
+  const body=document.getElementById('logBody');
+  const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const el=document.createElement('div');
+  el.className='log-entry '+cls;
+  el.innerHTML=`<span class="log-time">${t}</span>${msg}`;
+  body.insertBefore(el,body.firstChild);
+  while(body.children.length>MAX_LOG)body.removeChild(body.lastChild);
+  if(cls==='err'&&!logOpen){
+    unseenErrors++;
+    const badge=document.getElementById('logBadge');
+    badge.textContent=unseenErrors;
+    badge.className='log-badge vis';
+  }
+}
+
+function clearLog(){
+  document.getElementById("logBody").innerHTML="";
+  unseenErrors=0;
+  document.getElementById("logBadge").className="log-badge";
+  logEvent("Log cleared","info");
+}
+function toggleLog(){
+  logOpen=!logOpen;
+  document.getElementById('logBody').className='log-body'+(logOpen?' open':'');
+  document.getElementById('logToggle').textContent=logOpen?'Hide':'Show';
+  if(logOpen){unseenErrors=0;document.getElementById('logBadge').className='log-badge'}
+}
+
+function conn(){
+  ws=new WebSocket(WS);
+  ws.onopen=()=>{};
+  ws.onclose=()=>{stopAllJogs();setTimeout(conn,2e3)};
+  ws.onmessage=e=>{
+    const m=JSON.parse(e.data);
+    if(m.type==='state'){S=m;update()}
+    else if(m.type==='cmdResult'){
+      if(!m.ok){showToast('Error: '+(m.error||'failed'),'err');logEvent('Command failed: '+(m.error||'unknown'),'err')}
+    }
+  }
+}
+
+function send(c){if(ws&&ws.readyState===1)ws.send(JSON.stringify(c));else showToast('Not connected','err')}
+function toggleConnection(){
+  if(S.connected){send({action:'disconnect'});logEvent('Disconnected (manual)','info')}
+  else{send({action:'reconnect'});logEvent('Connecting...','info')}
+}
+
+function doReset(){
+  send({action:'reset'});
+  showToast('Reset sent','ok');
+  logEvent('Reset all errors','warn');
+}
+
+let toastTimer;
+function showToast(msg,cls){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+cls;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{t.className='toast'},2500);
+}
+
+function jogStart(cmd,stopCmd){
+  stopAllJogs();
+  send(cmd);
+  activeJog={interval:setInterval(()=>send(cmd),180),stopCmd};
+}
+function jogStop(){if(!activeJog)return;clearInterval(activeJog.interval);send(activeJog.stopCmd);activeJog=null}
+function stopAllJogs(){if(activeJog){clearInterval(activeJog.interval);try{send(activeJog.stopCmd)}catch(e){}activeJog=null}}
+
+window.addEventListener('blur',stopAllJogs);
+window.addEventListener('beforeunload',stopAllJogs);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAllJogs()});
+document.addEventListener('mouseup',jogStop);
+document.addEventListener('touchend',jogStop);
+
+function buildConsole(){
+  const con=document.getElementById('console');
+  let h='';
+  const rn=['Ytre','Midt','Indre'];
+  for(let c=1;c<=6;c++){
+    h+=`<div class="ch">`;
+    h+=`<div class="ch-top"><div class="ch-num" id="chNum${c}">${c}</div></div>`;
+    h+=`<div class="toggles">`;
+    h+=`<button class="tgl" id="tglEn${c}">Disabled</button>`;
+    h+=`<button class="tgl" id="tglDmx${c}" title="Listen to DMX desk">DMX</button>`;
+    h+=`</div>`;
+    for(let r=1;r<=3;r++){
+      h+=`<div class="ring"><div class="ring-hdr">`;
+      h+=`<span class="ring-name">${rn[r-1]}</span>`;
+      h+=`<span class="ring-avg" id="avg${c}_${r}">—</span>`;
+      h+=`<div class="ring-jog">`;
+      h+=`<button class="jb up" data-jog="ringUp" data-c="${c}" data-r="${r}">\u25B2</button>`;
+      h+=`<button class="jb dn" data-jog="ringDn" data-c="${c}" data-r="${r}">\u25BC</button>`;
+      h+=`</div></div>`;
+      for(let m=1;m<=3;m++){
+        const mi=(c-1)*9+(r-1)*3+m;
+        h+=`<div class="mtr" id="mtr${mi}">`;
+        h+=`<span class="mtr-id">${m}</span>`;
+        h+=`<span class="mtr-pos" id="pos${mi}">—</span>`;
+        h+=`<div class="mtr-ind">`;
+        h+=`<span class="ind" id="indU${mi}" title="Upper limit"></span>`;
+        h+=`<span class="ind" id="indL${mi}" title="Lower limit"></span>`;
+        h+=`<span class="ind" id="indE${mi}" title="Error" style="display:none"></span>`;
+        h+=`</div>`;
+        h+=`<div class="mtr-jog">`;
+        h+=`<button class="jb up" data-jog="motorUp" data-mi="${mi}">\u25B2</button>`;
+        h+=`<button class="jb dn" data-jog="motorDn" data-mi="${mi}">\u25BC</button>`;
+        h+=`</div></div>`;
+      }
+      h+=`</div>`;
+    }
+    h+=`<div class="ch-jog">`;
+    h+=`<button class="ch-jb up" data-jog="chUp" data-c="${c}">\u25B2 All Up</button>`;
+    h+=`<button class="ch-jb dn" data-jog="chDn" data-c="${c}">\u25BC All Down</button>`;
+    h+=`</div></div>`;
+  }
+  con.innerHTML=h;
+
+  for(let c=1;c<=6;c++){
+    document.getElementById(`tglEn${c}`).addEventListener('click',()=>{
+      const ch=S.chandeliers&&S.chandeliers.find(x=>x.id===c);
+      if(ch){
+        send({action:'enableChandelier',id:c,value:!ch.enabled});
+        logEvent(`Chandelier ${c} ${ch.enabled?'disabled':'enabled'}`,ch.enabled?'info':'ok');
+      }
+    });
+    document.getElementById(`tglDmx${c}`).addEventListener('click',()=>{
+      const ch=S.chandeliers&&S.chandeliers.find(x=>x.id===c);
+      if(ch){
+        send({action:'enableDMX',id:c,value:!ch.dmx});
+        logEvent(`Chandelier ${c} DMX ${ch.dmx?'off':'on'}`,ch.dmx?'info':'ok');
+      }
+    });
+  }
+
+  con.addEventListener('mousedown',jogHandler);
+  con.addEventListener('touchstart',jogHandler,{passive:false});
+  built=true;
+}
+
+function jogHandler(e){
+  const b=e.target.closest('[data-jog]');
+  if(!b)return;
+  if(e.type==='touchstart')e.preventDefault();
+  const j=b.dataset.jog;
+  const c=+b.dataset.c, r=+b.dataset.r, mi=+b.dataset.mi;
+  let cmd,stop;
+  if(j==='motorUp'){cmd={action:'jog',motor:mi,direction:1};stop={action:'jog',motor:mi,direction:0}}
+  else if(j==='motorDn'){cmd={action:'jog',motor:mi,direction:2};stop={action:'jog',motor:mi,direction:0}}
+  else if(j==='ringUp'){cmd={action:'jogRing',chandelier:c,ring:r,direction:1};stop={action:'jogRing',chandelier:c,ring:r,direction:0}}
+  else if(j==='ringDn'){cmd={action:'jogRing',chandelier:c,ring:r,direction:2};stop={action:'jogRing',chandelier:c,ring:r,direction:0}}
+  else if(j==='chUp'){cmd={action:'jogChandelier',chandelier:c,direction:1};stop={action:'jogChandelier',chandelier:c,direction:0}}
+  else if(j==='chDn'){cmd={action:'jogChandelier',chandelier:c,direction:2};stop={action:'jogChandelier',chandelier:c,direction:0}}
+  if(cmd)jogStart(cmd,stop);
+}
+
+function update(){
+  // Header
+  document.getElementById('connDot').className='dot '+(S.connected?'g':'r');
+  document.getElementById('stoDot').className='dot '+(S.sto?'g':'r');
+
+  // Log connection changes
+  if(prevConnected!==null&&prevConnected!==S.connected){
+    if(S.connected)logEvent('Connected to PLC','ok');
+    else if(!S.intentionalDisconnect)logEvent('Lost connection to PLC','err');
+  }
+  prevConnected=S.connected;
+
+  const dcb=document.getElementById('dcBar');
+  if(S.intentionalDisconnect){dcb.className='dc-bar vis';dcb.textContent='Disconnected. Click "Connect" to resume.'}
+  else if(!S.connected){dcb.className='dc-bar vis err';dcb.textContent='Lost connection — reconnecting...'}
+  else dcb.className='dc-bar';
+
+  const cb=document.getElementById('connBtn');
+  if(S.connected){cb.textContent='Disconnect';cb.className='gbtn dc'}
+  else{cb.textContent='Connect';cb.className='gbtn conn'}
+
+  const ps={5:'Running',6:'Stopped',15:'Config Mode'};
+  const pl=document.getElementById('plcLbl');
+  if(S.connected){pl.textContent='PLC: '+(ps[S.plcState]||'State '+S.plcState);pl.style.color=S.plcState===5?'var(--on)':'var(--warn)'}
+  else pl.textContent='';
+
+  // Motor errors — detect new errors and log them
+  const curErrors=new Set();
+  const errs=(S.motors||[]).filter(m=>m.e!==0);
+  for(const m of errs){
+    const key=`${m.i}:${m.e}`;
+    curErrors.add(key);
+    if(!prevErrors.has(key)){
+      logEvent(`Chandelier ${m.c}, ${m.rn} ring, motor ${m.m} — ${errorText(m.e)}`,'err');
+    }
+  }
+  // Log cleared errors
+  for(const key of prevErrors){
+    if(!curErrors.has(key)){
+      logEvent('Motor error cleared','ok');
+    }
+  }
+  prevErrors=curErrors;
+
+  const eb=document.getElementById('errBar');
+  if(errs.length){
+    eb.className='err-bar vis';
+    document.getElementById('errMsg').innerHTML=`<strong>${errs.length} error${errs.length>1?'s':''}:</strong> `+errs.map(m=>`Chandelier ${m.c}, ${m.rn} #${m.m}: ${errorText(m.e)}`).join(', ');
+  } else eb.className='err-bar';
+
+  if(!built&&S.chandeliers&&S.chandeliers.length)buildConsole();
+  if(!built)return;
+
+  for(const ch of (S.chandeliers||[])){
+    const mots=(S.motors||[]).filter(m=>m.c===ch.id);
+    const hasErr=mots.some(m=>m.e!==0);
+    document.getElementById(`chNum${ch.id}`).className='ch-num'+(hasErr?' err':(ch.enabled?' on':''));
+
+    const enBtn=document.getElementById(`tglEn${ch.id}`);
+    enBtn.textContent=ch.enabled?'Enabled':'Disabled';
+    enBtn.className='tgl'+(ch.enabled?' on':'');
+
+    document.getElementById(`tglDmx${ch.id}`).className='tgl'+(ch.dmx?' on':'');
+  }
+
+  for(const m of (S.motors||[])){
+    document.getElementById(`pos${m.i}`).textContent=m.p.toFixed(0);
+    document.getElementById(`indU${m.i}`).className='ind'+(!m.u?' u-on':'');
+    document.getElementById(`indL${m.i}`).className='ind'+(!m.l?' l-on':'');
+    const indE=document.getElementById(`indE${m.i}`);
+    if(m.e){indE.className='ind e-on';indE.style.display='';indE.title='Error '+m.e}
+    else{indE.style.display='none';indE.className='ind'}
+    document.getElementById(`mtr${m.i}`).className='mtr'+(m.e?' has-err':'');
+  }
+
+  for(const ch of (S.chandeliers||[])){
+    for(let r=1;r<=3;r++){
+      const rm=(S.motors||[]).filter(m=>m.c===ch.id&&m.r===r);
+      const avg=rm.reduce((s,m)=>s+m.p,0)/rm.length;
+      document.getElementById(`avg${ch.id}_${r}`).textContent=avg.toFixed(0);
+    }
+  }
+}
+
+conn();
+logEvent('UI loaded','info');
+</script>
+</body>
+</html>

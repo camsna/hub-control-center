@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir requests pandas
+
+RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
+
+COPY scrape_api.py scrape_trigger.py run_scraper.sh ./
+RUN chmod +x run_scraper.sh
+
+# Cron: scrape at 05:00 and 13:00 Oslo time
+RUN echo '0 5 * * * cd /app && /usr/local/bin/python3 scrape_api.py >> /app/logs/runner.log 2>&1' > /etc/cron.d/scraper-cron \
+    && echo '0 13 * * * cd /app && /usr/local/bin/python3 scrape_api.py >> /app/logs/runner.log 2>&1' >> /etc/cron.d/scraper-cron \
+    && echo '' >> /etc/cron.d/scraper-cron \
+    && chmod 0644 /etc/cron.d/scraper-cron \
+    && crontab /etc/cron.d/scraper-cron
+
+RUN mkdir -p /app/data /app/logs
+
+ENV PYTHONUNBUFFERED=1
+ENV TZ=Europe/Oslo
+
+EXPOSE 8091
+
+CMD ["sh", "-c", "cron && python3 scrape_trigger.py"]
