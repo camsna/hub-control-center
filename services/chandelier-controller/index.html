@@ -147,7 +147,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 <div class="toast" id="toast"></div>
 
 <script>
-const WS=`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`;
+const WS=(()=>{const p=location.protocol==='https:'?'wss':'ws';const b=location.pathname.replace(/\/[^/]*$/,'');return`${p}://${location.host}${b}/ws`})();
 let ws,S={connected:false,intentionalDisconnect:false};
 let built=false;
 let activeJog=null;
