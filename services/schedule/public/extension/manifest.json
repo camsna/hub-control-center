@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Hub Schedule Auth",
+  "version": "1.0",
+  "description": "Auto-sync EventTemple session to Hub Tech Schedule",
+  "permissions": ["cookies"],
+  "host_permissions": [
+    "*://*.eventtemple.com/*",
+    "http://tech.thehub/*",
+    "http://100.98.118.40:8090/*",
+    "http://10.0.81.231:8090/*"
+  ],
+  "action": {},
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

@@ -150,13 +150,53 @@
       font-weight: 500;
     }
 
-    .reauth-warning {
-      background: #78350f;
-      color: #fde68a;
-      padding: 4px 10px;
-      border-radius: 6px;
+    /* Auth status styles */
+    .auth-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 11px;
       font-weight: 600;
+    }
+
+    .auth-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .auth-dot.ok { background: #10b981; }
+    .auth-dot.expired { background: #f59e0b; animation: pulse-dot 1.5s infinite; }
+    .auth-dot.checking { background: #6b7280; animation: pulse-dot 1s infinite; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .auth-status .text-ok { color: #10b981; }
+    .auth-status .text-expired { color: #f59e0b; }
+    .auth-status .text-checking { color: #6b7280; }
+
+    .auth-reauth-btn {
+      background: #f59e0b;
+      color: #111318;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .auth-reauth-btn:hover { background: #fbbf24; }
+
+    .auth-synced-msg {
+      color: #10b981;
+      font-size: 11px;
+      font-weight: 600;
+      display: none;
     }
 
     /* === DAY TABS === */
@@ -242,7 +282,7 @@
       background: #1a1d24;
     }
 
-    /* Floor colors — on time and venue columns only */
+    /* Floor colors */
     .floor-2nd { background: #ea9999 !important; color: #1a1d21 !important; }
     .floor-1st { background: #ffe599 !important; color: #1a1d21 !important; }
     .floor-3rd { background: #a4c2f4 !important; color: #1a1d21 !important; }
@@ -309,7 +349,7 @@
       .header-top { flex-direction: column; align-items: flex-start; gap: 16px; }
       .week-label { font-size: 22px; }
       .date-label { font-size: 14px; }
-      .meta-row { padding: 10px 20px; }
+      .meta-row { padding: 10px 20px; flex-wrap: wrap; gap: 8px; }
       .day-tabs { padding: 0 16px; }
       .day-tab { padding: 12px 20px; font-size: 13px; }
       .week-selector { min-width: 220px; font-size: 13px; }
@@ -341,36 +381,6 @@
       }
       @page { margin: 1cm; size: landscape; }
     }
-
-    .reauth-btn {
-      background: #fde68a; color: #78350f; border: none; border-radius: 4px;
-      padding: 2px 8px; margin-left: 8px; font-size: 11px; font-weight: 700;
-      cursor: pointer;
-    }
-    .reauth-btn:hover { background: #fcd34d; }
-    .modal-overlay {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: #1c1f26; border: 1px solid #2d3139; border-radius: 12px;
-      padding: 32px; max-width: 600px; width: 90%; color: #e8eaed;
-    }
-    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #fff; }
-    .modal p { font-size: 14px; color: #9ca3af; line-height: 1.6; margin-bottom: 12px; }
-    .modal .cmd {
-      background: #111318; border: 1px solid #2d3139; border-radius: 8px;
-      padding: 14px; font-family: monospace; font-size: 13px; color: #09CBCF;
-      word-break: break-all; cursor: pointer; position: relative;
-    }
-    .modal .cmd:hover { border-color: #09CBCF; }
-    .modal .cmd::after { content: "click to copy"; position: absolute; right: 8px; top: 4px; font-size: 10px; color: #4b5563; }
-    .modal .close-btn {
-      margin-top: 20px; padding: 10px 20px; background: #2d3139; color: #9ca3af;
-      border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
-    }
-    .modal .close-btn:hover { background: #363b44; color: #fff; }
   </style>
 </head>
 <body>
@@ -397,9 +407,12 @@
 
     <div class="meta-row">
       <div class="data-info">Last sync: <span id="dataAsOf">&mdash;</span></div>
-      <span id="reauthWarning" class="reauth-warning" style="display:none">Session expired
-        <button class="reauth-btn" onclick="showReauth()">Fix</button>
-      </span>
+      <div class="auth-status" id="authStatus">
+        <span class="auth-dot checking" id="authDot"></span>
+        <span class="text-checking" id="authText">Checking session...</span>
+        <button class="auth-reauth-btn" id="reauthBtn" style="display:none">Re-authenticate</button>
+        <span class="auth-synced-msg" id="authSynced">Cookies synced! Verifying...</span>
+      </div>
     </div>
 
     <div class="day-tabs" id="dayTabs"></div>
@@ -407,22 +420,12 @@
     <div class="table-container">
       <div id="tableContent" class="loading">Loading schedule...</div>
     </div>
-  
-  <div class="modal-overlay" id="reauthModal">
-    <div class="modal">
-      <h2>Re-authenticate EventTemple</h2>
-      <p>The scraper session has expired. Run this command on any computer with Python and a browser:</p>
-      <div class="cmd" onclick="navigator.clipboard.writeText('python3 <(curl -s http://100.98.118.40:8090/reauth.py)').then(()=>{this.style.borderColor='#10b981';setTimeout(()=>this.style.borderColor='',1500)});">python3 &lt;(curl -s http://100.98.118.40:8090/reauth.py)</div>
-      <p style="margin-top:16px;">A browser will open. Log in to EventTemple. Press ENTER in the terminal. Done.</p>
-      <p style="font-size:12px;color:#4b5563;">Requires: Python 3, Playwright (auto-installs if missing)</p>
-      <button class="close-btn" onclick="document.getElementById('reauthModal').classList.remove('open')">Close</button>
-    </div>
   </div>
-</div>
 
 <script>
 var DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 var state = { weeks: [], selectedKey: null, weekData: null, currentDay: 'Monday' };
+var authState = { valid: null, polling: false, pollTimer: null };
 
 function fetchJSON(url) {
     return fetch(url).then(function(r) {
@@ -431,13 +434,97 @@ function fetchJSON(url) {
     });
 }
 
+// === AUTH STATUS ===
+
+function checkAuth() {
+    var dot = document.getElementById('authDot');
+    var text = document.getElementById('authText');
+    var btn = document.getElementById('reauthBtn');
+    var synced = document.getElementById('authSynced');
+
+    dot.className = 'auth-dot checking';
+    text.className = 'text-checking';
+    text.textContent = 'Checking session...';
+
+    fetchJSON('/api/auth/check')
+    .then(function(result) {
+        authState.valid = result.valid;
+        if (result.valid) {
+            dot.className = 'auth-dot ok';
+            text.className = 'text-ok';
+            text.textContent = 'EventTemple connected';
+            btn.style.display = 'none';
+            synced.style.display = 'none';
+            // If we were polling after reauth, stop and offer to scrape
+            if (authState.polling) {
+                stopAuthPolling();
+                synced.style.display = 'inline';
+                synced.textContent = 'Session restored!';
+                setTimeout(function() { synced.style.display = 'none'; }, 5000);
+                // Auto-trigger a scrape since we just re-authenticated
+                document.getElementById('scrapeBtn').click();
+            }
+        } else {
+            dot.className = 'auth-dot expired';
+            text.className = 'text-expired';
+            text.textContent = 'Session expired';
+            btn.style.display = 'inline-block';
+        }
+    })
+    .catch(function(e) {
+        dot.className = 'auth-dot expired';
+        text.className = 'text-expired';
+        text.textContent = 'Auth check failed';
+        btn.style.display = 'inline-block';
+    });
+}
+
+function startAuthPolling() {
+    authState.polling = true;
+    authState.pollTimer = setInterval(checkAuth, 5000);
+}
+
+function stopAuthPolling() {
+    authState.polling = false;
+    if (authState.pollTimer) {
+        clearInterval(authState.pollTimer);
+        authState.pollTimer = null;
+    }
+}
+
+function handleReauth() {
+    var btn = document.getElementById('reauthBtn');
+    var synced = document.getElementById('authSynced');
+
+    // Open EventTemple — extension will grab cookies on successful login
+    window.open('https://app.eventtemple.com/event_spaces/list', '_blank');
+
+    btn.style.display = 'none';
+    synced.style.display = 'inline';
+    synced.textContent = 'Waiting for extension to sync cookies...';
+
+    // Poll for new valid auth
+    startAuthPolling();
+
+    // Stop polling after 5 minutes if nothing happens
+    setTimeout(function() {
+        if (authState.polling && !authState.valid) {
+            stopAuthPolling();
+            synced.textContent = 'Timed out. Try again?';
+            btn.style.display = 'inline-block';
+            setTimeout(function() { synced.style.display = 'none'; }, 3000);
+        }
+    }, 300000);
+}
+
+// === SCHEDULE DATA ===
+
 function init() {
     Promise.all([fetchJSON('/api/weeks'), fetchJSON('/api/status')])
     .then(function(results) {
         var weeks = results[0], status = results[1];
         state.weeks = weeks;
         document.getElementById('dataAsOf').textContent = status.dataAsOf || '\u2014';
-        if (status.needsReauth) document.getElementById('reauthWarning').style.display = 'inline';
 
         var today = new Date();
         var d = today.getDay();
@@ -530,6 +617,8 @@ function renderTable() {
         '<tbody>' + rows + '</tbody></table></div>';
 }
 
+// === EVENT LISTENERS ===
+
 document.getElementById('weekSelect').addEventListener('change', function(e) { loadWeek(e.target.value); renderWeekSelector(); });
 document.getElementById('prevWeek').addEventListener('click', function() {
     var i = state.weeks.findIndex(function(w) { return w.key === state.selectedKey; });
@@ -550,14 +639,48 @@ document.getElementById('currentWeek').addEventListener('click', function() {
     if (state.weeks.find(function(w) { return w.key === key; })) { loadWeek(key).then(renderWeekSelector); }
 });
 document.getElementById('printBtn').addEventListener('click', function() { window.print(); });
+document.getElementById('reauthBtn').addEventListener('click', handleReauth);
 
-function showReauth() { document.getElementById('reauthModal').classList.add('open'); }
+document.getElementById('scrapeBtn').addEventListener('click', function() {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Updating...';
+    fetch('/api/scrape', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.ok) {
+            btn.textContent = 'Scraping...';
+            var poll = setInterval(function() {
+                fetch('/api/scrape/status').then(function(r) { return r.json(); })
+                .then(function(s) {
+                    if (!s.running) {
+                        clearInterval(poll);
+                        btn.disabled = false;
+                        btn.textContent = 'Update Data';
+                        if (s.last_result === 'success') {
+                            init();
+                            checkAuth();
+                        } else {
+                            checkAuth(); // May have failed due to expired session
+                        }
+                    }
+                }).catch(function() { clearInterval(poll); btn.disabled = false; btn.textContent = 'Update Data'; });
+            }, 3000);
+        } else {
+            btn.textContent = data.error || 'Failed';
+            setTimeout(function() { btn.disabled = false; btn.textContent = 'Update Data'; }, 3000);
+        }
+    })
+    .catch(function(e) {
+        btn.textContent = 'Error';
+        setTimeout(function() { btn.disabled = false; btn.textContent = 'Update Data'; }, 3000);
+    });
+});
+
+// === STARTUP ===
 init();
-document.getElementById("scrapeBtn").addEventListener("click", function() {    var btn = this;    btn.disabled = true;    btn.textContent = "Updating...";    fetch("/api/scrape", { method: "POST" })    .then(function(r) { return r.json(); })    .then(function(data) {        if (data.ok) {            btn.textContent = "Scraping...";            var poll = setInterval(function() {                fetch("/api/scrape/status").then(function(r) { return r.json(); })                .then(function(s) {                    if (!s.running) {                        clearInterval(poll);                        btn.disabled = false;                        btn.textContent = "Update Data";                        init();                    }                }).catch(function() { clearInterval(poll); btn.disabled = false; btn.textContent = "Update Data"; });            }, 3000);        } else {            btn.textContent = data.error || "Failed";            setTimeout(function() { btn.disabled = false; btn.textContent = "Update Data"; }, 3000);        }    })    .catch(function(e) {        btn.textContent = "Error";        setTimeout(function() { btn.disabled = false; btn.textContent = "Update Data"; }, 3000);    });});
-</script>
-</body>
-</html>
-<script>
+checkAuth();
+
 // Reload data at 05:05 and 13:05 (just after auto-scrape)
 (function() {
     function msUntil(hour, min) {
@@ -570,6 +693,7 @@ document.getElementById("scrapeBtn").addEventListener("click", function() {    v
     function scheduleReload(hour, min) {
         setTimeout(function() {
             init();
+            checkAuth();
             scheduleReload(hour, min);
         }, msUntil(hour, min));
     }
@@ -577,3 +701,5 @@ document.getElementById("scrapeBtn").addEventListener("click", function() {    v
     scheduleReload(13, 5);
 })();
 </script>
+</body>
+</html>

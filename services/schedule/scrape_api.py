@@ -93,7 +93,7 @@ def load_session():
 def check_session(session):
     """Verify session is valid"""
     r = session.get(f'{BASE_URL}/api/v1/stats/user?format=json', timeout=15)
-    if r.status_code == 200:
+    if r.status_code == 200 and "json" in r.headers.get("content-type", ""):
         return True
     log(f'Session check failed: {r.status_code}')
     return False

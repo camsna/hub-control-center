@@ -97,7 +97,7 @@ services:
     ports:
       - "8090:8090"
     volumes:
-      - ./services/schedule/data:/app/data:ro
+      - ./services/schedule/data:/app/data
     environment:
       - PORT=8090
       - TZ=Europe/Oslo

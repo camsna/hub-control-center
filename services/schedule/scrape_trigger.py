@@ -34,12 +34,47 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(scrape_status).encode())
+        elif self.path == "/check-auth":
+            result = check_auth()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(result).encode())
         else:
             self.send_response(404)
             self.end_headers()
 
     def log_message(self, format, *args):
         pass  # quiet
+
+def check_auth():
+    """Check if EventTemple session is valid by verifying JSON response."""
+    try:
+        result = subprocess.run(
+            ["python3", "-c", """
+import json, sys
+from scrape_api import load_session, BASE_URL
+
+session = load_session()
+cookie_count = len(list(session.cookies))
+if cookie_count == 0:
+    print(json.dumps({"valid": False, "reason": "No cookies loaded"}))
+    sys.exit(0)
+
+r = session.get(f'{BASE_URL}/api/v1/stats/user?format=json', timeout=15)
+content_type = r.headers.get('content-type', '')
+if 'json' in content_type and r.status_code == 200:
+    print(json.dumps({"valid": True, "cookies": cookie_count}))
+else:
+    print(json.dumps({"valid": False, "reason": "Session expired", "status": r.status_code}))
+"""],
+            capture_output=True, text=True, timeout=30
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return json.loads(result.stdout.strip())
+        return {"valid": False, "reason": f"Check failed: {result.stderr[-200:]}"}
+    except Exception as e:
+        return {"valid": False, "reason": str(e)}
 
 def run_scrape():
     try:

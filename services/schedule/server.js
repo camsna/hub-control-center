@@ -34,33 +34,33 @@ app.get('/api/week/:key', (req, res) => {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(weekKey)) {
             return res.status(400).json({ error: 'Invalid week key' });
         }
-        
+
         const filePath = path.join(WEEKS_DIR, `week_${weekKey}.csv`);
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({ error: 'Week not found' });
         }
-        
+
         const content = fs.readFileSync(filePath, 'utf-8');
         const rows = parse(content, { columns: true, skip_empty_lines: true });
-        
+
         const monday = new Date(weekKey + 'T00:00:00');
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        
+
         const startMonth = monday.toLocaleDateString('en-US', { month: 'short' });
         const endMonth = sunday.toLocaleDateString('en-US', { month: 'short' });
         const startDay = monday.getDate();
         const endDay = sunday.getDate();
         const year = monday.getFullYear();
-        
+
         const weekLabel = startMonth === endMonth
             ? `Week of ${startMonth} ${startDay}-${endDay}, ${year}`
             : `Week of ${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
-        
+
         const days = {};
         const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         dayNames.forEach(d => { days[d] = { date: '', events: [] }; });
-        
+
         rows.forEach(row => {
             const day = row.Day;
             if (!days[day]) return;
@@ -76,7 +76,7 @@ app.get('/api/week/:key', (req, res) => {
                 floor: row.Floor || ''
             });
         });
-        
+
         res.json({ weekLabel, days });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -99,7 +99,33 @@ app.get('/api/status', (req, res) => {
     }
 });
 
-// API: receive auth.json from reauth script
+// API: check auth status (proxied to scraper)
+app.get('/api/auth/check', (req, res) => {
+    const options = {
+        hostname: SCRAPER_HOST,
+        port: SCRAPER_PORT,
+        path: '/check-auth',
+        method: 'GET',
+        timeout: 30000
+    };
+    const proxy = http.request(options, (proxyRes) => {
+        let body = '';
+        proxyRes.on('data', c => body += c);
+        proxyRes.on('end', () => {
+            try {
+                res.status(proxyRes.statusCode).json(JSON.parse(body));
+            } catch (e) {
+                res.status(502).json({ valid: false, reason: 'Invalid response from scraper' });
+            }
+        });
+    });
+    proxy.on('error', (e) => {
+        res.status(502).json({ valid: false, reason: 'Scraper unreachable: ' + e.message });
+    });
+    proxy.end();
+});
+
+// API: receive auth.json from extension or reauth script
 app.post('/api/auth', express.json({limit: '1mb'}), (req, res) => {
     try {
         const authData = req.body;
