@@ -2755,24 +2755,44 @@
         box-sizing: border-box;
       }
 
-      /* Scale down fixture rows to fit viewport */
-      .truss-fixtures {
-        flex-wrap: wrap;
+      /* Force fixture strips to wrap within viewport */
+      .fixture-strip,
+      .truss-row .fixture-strip {
+        flex-wrap: wrap !important;
       }
 
-      .room-section {
+      /* Let fixtures shrink to fit */
+      .fixture {
+        min-width: 38px !important;
+        flex: 0 1 auto !important;
+      }
+
+      /* Truss rows and room sections constrained */
+      .truss-row,
+      .truss-content,
+      .room-section,
+      .room-content {
         max-width: 100%;
         overflow: hidden;
+        box-sizing: border-box;
       }
 
-      /* Lysekrone cards stack if needed */
-      .lysekroner-row {
+      /* Lysekrone cards wrap if needed */
+      .lysekrone-container,
+      .lysekrone-pair {
         flex-wrap: wrap;
       }
 
-      /* Universe block pills wrap */
-      .universe-block .fixture-tags {
+      /* Universe block header tags wrap */
+      .universe-block-tags {
         flex-wrap: wrap;
+      }
+
+      /* Constrain the floorplan and its children */
+      .floorplan > *,
+      .tab-content > * {
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       /* Larger fixture touch targets */
