@@ -11705,7 +11705,7 @@ function setupTabletTouchSelection() {
   })();
 
   // Allow two-finger scroll while capturing one-finger
-  floorplan.style.touchAction = 'manipulation';
+  floorplan.style.touchAction = 'pan-x pan-y';
 
   let touchDragging = false;
   let touchStart = { x: 0, y: 0 };
