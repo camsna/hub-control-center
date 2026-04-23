@@ -2697,44 +2697,209 @@
         display: block !important;
       }
 
-      /* Restyle controls inside the sheet for tablet */
+      /* === PHASE 2: TABLET CONTROL PANEL REDESIGN === */
 
-      /* Intensity slider — match the strip style */
-      .tablet-sheet .intensity-slider {
-        width: 100% !important;
-        height: 8px !important;
-        border-radius: 4px !important;
+      /* Hide Selection section — redundant with strip */
+      .tablet-sheet .panel-section:has(> .panel-title:first-child) .selection-info,
+      .tablet-sheet .selection-info {
+        display: none !important;
+      }
+      .tablet-sheet .panel-section:first-child {
+        display: none !important;
+      }
+
+      /* All sliders in sheet — large touch-friendly style */
+      .tablet-sheet input[type="range"] {
         -webkit-appearance: none !important;
         appearance: none !important;
+        height: 10px !important;
+        border-radius: 5px !important;
         background: var(--bg-card) !important;
         outline: none !important;
       }
 
-      .tablet-sheet .intensity-slider::-webkit-slider-thumb {
+      .tablet-sheet input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none !important;
-        width: 24px !important;
-        height: 24px !important;
+        width: 28px !important;
+        height: 28px !important;
         border-radius: 50% !important;
         background: var(--accent) !important;
         cursor: pointer !important;
+        border: 2px solid var(--bg-panel) !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3) !important;
+      }
+
+      /* Intensity presets — large touch targets */
+      .tablet-sheet .intensity-preset {
+        min-height: 44px !important;
+        min-width: 44px !important;
+        font-size: 14px !important;
+        border-radius: 8px !important;
+        padding: 8px !important;
+      }
+
+      /* RGBW sliders — 2x2 grid layout */
+      .tablet-sheet .color-sliders {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+      }
+
+      .tablet-sheet .color-slider-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+
+      .tablet-sheet .color-slider-label {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        min-width: 20px !important;
+      }
+
+      .tablet-sheet .color-slider {
+        flex: 1 !important;
+      }
+
+      .tablet-sheet .color-slider.red::-webkit-slider-thumb {
+        background: #ff6b6b !important;
+      }
+
+      .tablet-sheet .color-slider.green::-webkit-slider-thumb {
+        background: #69db7c !important;
+      }
+
+      .tablet-sheet .color-slider.blue::-webkit-slider-thumb {
+        background: #74c0fc !important;
+      }
+
+      .tablet-sheet .color-slider.white::-webkit-slider-thumb {
+        background: #ffffff !important;
+        border: 2px solid var(--border) !important;
+      }
+
+      .tablet-sheet .color-slider-value {
+        font-size: 13px !important;
+        min-width: 30px !important;
+        text-align: right !important;
       }
 
       /* Color swatches — small circles, one row */
       .tablet-sheet .color-presets {
         display: flex !important;
         flex-wrap: nowrap !important;
-        gap: 6px !important;
+        gap: 8px !important;
         grid-template-columns: none !important;
-        overflow-x: auto;
+        overflow-x: auto !important;
+        padding: 4px 0 !important;
       }
 
       .tablet-sheet .color-preset {
-        width: 28px !important;
-        height: 28px !important;
-        min-width: 28px !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
         border-radius: 50% !important;
         flex-shrink: 0 !important;
         padding: 0 !important;
+      }
+
+      /* Color picker canvas — full width */
+      .tablet-sheet .color-picker-box {
+        height: 100px !important;
+        border-radius: 8px !important;
+      }
+
+      /* Pan/Tilt — XY touch pad */
+      .tablet-sheet .movement-control {
+        position: relative;
+      }
+
+      .tablet-sheet .movement-sliders {
+        display: none !important;
+      }
+
+      .tablet-sheet .tablet-xy-pad {
+        display: block !important;
+        width: 100%;
+        height: 200px;
+        background: var(--bg-card);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        position: relative;
+        touch-action: none;
+        cursor: crosshair;
+        margin-bottom: 12px;
+      }
+
+      .tablet-sheet .tablet-xy-pad .xy-marker {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+
+      .tablet-sheet .tablet-xy-pad .xy-crosshair-h {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--border);
+        pointer-events: none;
+      }
+
+      .tablet-sheet .tablet-xy-pad .xy-crosshair-v {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--border);
+        pointer-events: none;
+      }
+
+      .tablet-sheet .tablet-xy-pad .xy-label-pan {
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 9px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .tablet-sheet .tablet-xy-pad .xy-label-tilt {
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-90deg);
+        font-size: 9px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Movement preset buttons — larger */
+      .tablet-sheet .movement-presets-row {
+        display: flex !important;
+        gap: 10px !important;
+      }
+
+      .tablet-sheet .movement-presets-row .btn {
+        min-height: 44px !important;
+        flex: 1 !important;
+        font-size: 14px !important;
+      }
+
+      /* Hide XY pad on desktop (added by JS) */
+      .tablet-xy-pad {
+        display: none;
       }
 
       /* Hide desktop tab bar - must not take grid space */
@@ -5031,6 +5196,13 @@
                 <input type="range" class="movement-slider" id="sliderTilt" min="0" max="255" value="128">
                 <span class="movement-slider-value" id="valueTilt">128</span>
               </div>
+            </div>
+            <div class="tablet-xy-pad" id="tabletXYPad">
+              <div class="xy-crosshair-h"></div>
+              <div class="xy-crosshair-v"></div>
+              <div class="xy-marker" id="xyMarker"></div>
+              <span class="xy-label-pan">Pan</span>
+              <span class="xy-label-tilt">Tilt</span>
             </div>
             <div class="movement-presets-row">
               <button class="btn btn-accent" id="btnHome">⌂ Home</button>
