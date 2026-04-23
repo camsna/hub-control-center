@@ -11626,8 +11626,25 @@ function setupTabletControlStrip() {
   }, { passive: true });
 
   // Clicking the strip (not the slider) opens the bottom sheet
+  // Clear button
+  const clearBtn = document.getElementById('stripClearBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('touchend', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      clearSelection();
+      updateControlPanel();
+    });
+    clearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      clearSelection();
+      updateControlPanel();
+    });
+  }
+
   strip.addEventListener('click', (e) => {
-    if (e.target.closest('.strip-slider-wrap') || e.target.closest('.strip-slider')) return;
+    if (e.target.closest('.strip-slider-wrap') || e.target.closest('.strip-slider') || e.target.closest('.strip-clear-btn')) return;
     if (typeof openTabletSheet === 'function') {
       openTabletSheet();
     }
