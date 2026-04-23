@@ -12030,7 +12030,75 @@ function setupTabletSheet() {
     }, { passive: true });
   }
 
-  // Sheet controls are handled by the reparented desktop control panel
+  // XY Pad for pan/tilt
+  const xyPad = document.getElementById('tabletXYPad');
+  const xyMarker = document.getElementById('xyMarker');
+  const panSlider = document.getElementById('sliderPan');
+  const tiltSlider = document.getElementById('sliderTilt');
+
+  if (xyPad && xyMarker && panSlider && tiltSlider) {
+    function updateMarkerFromSliders() {
+      const padRect = xyPad.getBoundingClientRect();
+      if (padRect.width === 0 || padRect.height === 0) return;
+      const panVal = parseInt(panSlider.value) / 255;
+      const tiltVal = parseInt(tiltSlider.value) / 255;
+      xyMarker.style.left = (panVal * padRect.width) + 'px';
+      xyMarker.style.top = ((1 - tiltVal) * padRect.height) + 'px';
+    }
+
+    function handleXYInput(clientX, clientY) {
+      const padRect = xyPad.getBoundingClientRect();
+      if (padRect.width === 0 || padRect.height === 0) return;
+      const x = Math.max(0, Math.min(1, (clientX - padRect.left) / padRect.width));
+      const y = Math.max(0, Math.min(1, (clientY - padRect.top) / padRect.height));
+
+      const panVal = Math.round(x * 255);
+      const tiltVal = Math.round((1 - y) * 255);
+
+      panSlider.value = panVal;
+      tiltSlider.value = tiltVal;
+      panSlider.dispatchEvent(new Event('input', { bubbles: true }));
+      tiltSlider.dispatchEvent(new Event('input', { bubbles: true }));
+
+      xyMarker.style.left = (x * padRect.width) + 'px';
+      xyMarker.style.top = (y * padRect.height) + 'px';
+    }
+
+    xyPad.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleXYInput(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
+    xyPad.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleXYInput(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
+    xyPad.addEventListener('mousedown', (e) => {
+      handleXYInput(e.clientX, e.clientY);
+      const onMove = (ev) => handleXYInput(ev.clientX, ev.clientY);
+      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    // Sync marker when sliders change (e.g. Home button, Take Control)
+    panSlider.addEventListener('input', updateMarkerFromSliders);
+    tiltSlider.addEventListener('input', updateMarkerFromSliders);
+
+    // Update marker when sheet opens (pad has dimensions then)
+    const origOpen = window.openTabletSheet;
+    window.openTabletSheet = function() {
+      if (origOpen) origOpen();
+      setTimeout(updateMarkerFromSliders, 50);
+    };
+    // Reassign for the global reference
+    if (typeof openTabletSheet !== 'undefined') {
+      openTabletSheet = window.openTabletSheet;
+    }
+  }
 }
 
 // === TASK 9: TOUCH DRAG BOX-SELECT + TWO-FINGER SCROLL ===
