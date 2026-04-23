@@ -12043,6 +12043,21 @@ function setupTabletSheet() {
     backdrop.addEventListener('click', closeTabletSheet);
   }
 
+  // Close button
+  const sheetCloseBtn = document.getElementById('sheetCloseBtn');
+  if (sheetCloseBtn) {
+    sheetCloseBtn.addEventListener('touchend', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      closeTabletSheet();
+    });
+    sheetCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      closeTabletSheet();
+    });
+  }
+
   // Handle swipe down to close
   if (handle) {
     let touchStartY = 0;
