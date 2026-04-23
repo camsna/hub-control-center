@@ -2659,7 +2659,8 @@
     @media (max-width: 1024px) {
       /* Override the app grid for tablet */
       .app {
-        grid-template-rows: 56px 36px 1fr auto auto;
+        grid-template-rows: 56px 36px 1fr;
+        padding-bottom: 100px; /* space for fixed control strip (50px) + tab bar (50px) */
       }
 
       /* Hide desktop sidebar */
@@ -2755,16 +2756,23 @@
         box-sizing: border-box;
       }
 
-      /* Force fixture strips to wrap within viewport */
+      /* Force fixture strips to wrap and center */
       .fixture-strip,
       .truss-row .fixture-strip {
         flex-wrap: wrap !important;
+        justify-content: center !important;
       }
 
       /* Let fixtures shrink to fit */
       .fixture {
-        min-width: 38px !important;
+        min-width: 36px !important;
+        max-width: 60px !important;
         flex: 0 1 auto !important;
+        font-size: 10px !important;
+      }
+
+      .fixture .fixture-label {
+        font-size: 8px !important;
       }
 
       /* Truss rows and room sections constrained */
@@ -2774,6 +2782,13 @@
       .room-content {
         max-width: 100%;
         overflow: hidden;
+        box-sizing: border-box;
+      }
+
+      /* Stage bar and room headers */
+      .stage-bar,
+      .room-header-bar {
+        max-width: 100%;
         box-sizing: border-box;
       }
 
@@ -2812,6 +2827,11 @@
         border-top: 1px solid var(--border);
         min-height: 50px;
         cursor: pointer;
+        position: fixed;
+        bottom: 50px;
+        left: 0;
+        right: 0;
+        z-index: 100;
       }
 
       .strip-selection {
@@ -3041,6 +3061,11 @@
         border-top: 1px solid var(--border);
         padding: 4px 0;
         min-height: 50px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
       }
 
       .tablet-tab {
