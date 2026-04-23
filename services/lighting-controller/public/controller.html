@@ -8236,7 +8236,8 @@ function setupEventListeners() {
     const fixture = e.target.closest('.fixture');
     if (fixture) {
       const id = fixture.dataset.id;
-      if (addToSelection) {
+      const isTouch = 'ontouchstart' in window && window.matchMedia('(max-width: 1024px)').matches;
+      if (addToSelection || isTouch) {
         toggleFixture(id);
       } else {
         selectFixture(id, false);
