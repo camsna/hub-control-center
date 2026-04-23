@@ -6991,6 +6991,11 @@ function init() {
   setupSidebarSections(); // Setup collapsible sidebar
   setupTakeoverDropdown(); // Setup room selection dropdown
   setupMobileNav();  // Setup mobile navigation
+  setupTabletPillBar();  // Tablet pill bar interaction
+  setupTabletTabBar();  // Tablet bottom tab bar sync
+  setupTabletControlStrip();  // Tablet control strip sync
+  setupTabletSheet();  // Tablet bottom sheet controls
+  setupTabletTouchSelection();  // Touch drag box-select
 }
 
 // === RENDER ===
@@ -8090,6 +8095,8 @@ function updateControlPanel() {
       btn.classList.toggle('active', parseInt(btn.dataset.intensity) === dimmerValue);
     });
   }
+  // Sync tablet control strip
+  if (typeof window.syncTabletStrip === 'function') window.syncTabletStrip();
 }
 
 // ============================================================================
@@ -11356,6 +11363,445 @@ function setupEffectsObserver() {
   });
 }
 
+
+// ============================================================================
+// TABLET UI - INTERACTIVE BEHAVIORS
+// Tasks 6-9: Pill bar, tab bar, control strip, bottom sheet, touch selection
+// ============================================================================
+
+// === TASK 6: PILL BAR INTERACTION ===
+function setupTabletPillBar() {
+  const pillBar = document.getElementById('tabletPillBar');
+  if (!pillBar) return;
+
+  pillBar.addEventListener('click', (e) => {
+    const pill = e.target.closest('.pill');
+    if (!pill) return;
+
+    // Update active pill styling
+    pillBar.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+
+    const pillRoom = pill.dataset.pillRoom;
+    const pillGroup = pill.dataset.pillGroup;
+
+    if (pillRoom) {
+      // Room pills
+      if (pillRoom === 'all') {
+        clearSelection();
+        selectByRoom('all');
+      } else {
+        // "sal-a" -> "a", "sal-b" -> "b", "sal-c" -> "c"
+        const roomLetter = pillRoom.split('-')[1];
+        const sidebarItem = document.querySelector('.sidebar-item[data-select-room="' + roomLetter + '"]');
+        if (sidebarItem) {
+          sidebarItem.click();
+        } else {
+          clearSelection();
+          selectByRoom(roomLetter);
+        }
+      }
+    } else if (pillGroup) {
+      // Group pills - find matching sidebar item by data-select-type
+      const sidebarItem = document.querySelector('.sidebar-item[data-select-type="' + pillGroup + '"]');
+      if (sidebarItem) {
+        sidebarItem.click();
+      } else {
+        // Fallback: try matching by label text
+        const allSidebarItems = document.querySelectorAll('.sidebar-item');
+        for (const item of allSidebarItems) {
+          const label = item.querySelector('.label');
+          if (label && label.textContent.trim().toLowerCase() === pillGroup.toLowerCase()) {
+            item.click();
+            break;
+          }
+        }
+      }
+    }
+
+    updateControlPanel();
+  });
+}
+
+// === TASK 7: BOTTOM TAB BAR + CONTROL STRIP SYNC ===
+function setupTabletTabBar() {
+  const tabletTabBar = document.getElementById('tabletTabBar');
+  if (!tabletTabBar) return;
+
+  // Tablet tab clicks -> trigger desktop tab
+  tabletTabBar.addEventListener('click', (e) => {
+    const tabletTab = e.target.closest('.tablet-tab');
+    if (!tabletTab) return;
+
+    const targetTab = tabletTab.dataset.tab;
+    if (!targetTab) return;
+
+    // Update tablet tab bar active states
+    tabletTabBar.querySelectorAll('.tablet-tab').forEach(t => t.classList.remove('active'));
+    tabletTab.classList.add('active');
+
+    // Trigger the corresponding desktop tab
+    const desktopTab = document.querySelector('.tab[data-tab="' + targetTab + '"]');
+    if (desktopTab) {
+      desktopTab.click();
+    }
+  });
+
+  // Reverse sync: when desktop tabs are clicked, update tablet tab bar
+  document.querySelectorAll('.tab[data-tab]').forEach(desktopTab => {
+    desktopTab.addEventListener('click', () => {
+      const targetTab = desktopTab.dataset.tab;
+      if (!targetTab) return;
+      tabletTabBar.querySelectorAll('.tablet-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === targetTab);
+      });
+    });
+  });
+}
+
+function setupTabletControlStrip() {
+  const strip = document.getElementById('tabletControlStrip');
+  const stripSlider = document.getElementById('stripIntensitySlider');
+  const stripSelection = document.getElementById('stripSelection');
+  const stripIntensityValue = document.getElementById('stripIntensityValue');
+  const stripColorSwatch = document.getElementById('stripColorSwatch');
+  const mainSlider = document.getElementById('intensitySlider');
+
+  if (!strip || !stripSlider || !mainSlider) return;
+
+  // Strip slider -> sync to main slider
+  stripSlider.addEventListener('input', () => {
+    const value = parseInt(stripSlider.value);
+    mainSlider.value = value;
+    mainSlider.dispatchEvent(new Event('input', { bubbles: true }));
+    if (stripIntensityValue) stripIntensityValue.textContent = value + '%';
+  }, { passive: true });
+
+  stripSlider.addEventListener('change', () => {
+    const value = parseInt(stripSlider.value);
+    mainSlider.value = value;
+    mainSlider.dispatchEvent(new Event('change', { bubbles: true }));
+  }, { passive: true });
+
+  // Main slider -> sync to strip slider
+  mainSlider.addEventListener('input', () => {
+    const value = parseInt(mainSlider.value);
+    stripSlider.value = value;
+    if (stripIntensityValue) stripIntensityValue.textContent = value + '%';
+  }, { passive: true });
+
+  // Clicking the strip (not the slider) opens the bottom sheet
+  strip.addEventListener('click', (e) => {
+    if (e.target.closest('.strip-slider-wrap') || e.target.closest('.strip-slider')) return;
+    if (typeof openTabletSheet === 'function') {
+      openTabletSheet();
+    }
+  });
+
+  // Expose syncTabletStrip globally
+  window.syncTabletStrip = function() {
+    const totalSelected = selectedFixtures.size +
+      (typeof selectedUniverses !== 'undefined' ? selectedUniverses.size : 0) +
+      (typeof selectedLysekroneComponents !== 'undefined' ? selectedLysekroneComponents.size : 0) +
+      (typeof selectedHouseGroups !== 'undefined' ? selectedHouseGroups.size : 0);
+
+    if (stripSelection) {
+      stripSelection.textContent = totalSelected === 0 ? 'No selection' : totalSelected + ' selected';
+    }
+
+    if (mainSlider && stripSlider) {
+      stripSlider.value = mainSlider.value;
+    }
+    if (stripIntensityValue && mainSlider) {
+      stripIntensityValue.textContent = mainSlider.value + '%';
+    }
+
+    // Reflect current color in swatch
+    if (stripColorSwatch) {
+      const r = document.getElementById('sliderRed');
+      const g = document.getElementById('sliderGreen');
+      const b = document.getElementById('sliderBlue');
+      if (r && g && b) {
+        stripColorSwatch.style.background = 'rgb(' + r.value + ',' + g.value + ',' + b.value + ')';
+      }
+    }
+  };
+}
+
+// === TASK 8: BOTTOM SHEET OPEN/CLOSE + CONTROLS ===
+function openTabletSheet() {
+  const backdrop = document.getElementById('tabletSheetBackdrop');
+  const sheet = document.getElementById('tabletSheet');
+  if (!backdrop || !sheet) return;
+
+  backdrop.classList.add('visible');
+  sheet.classList.add('visible');
+  // Trigger reflow before adding .open for CSS transition
+  void sheet.offsetHeight;
+  sheet.classList.add('open');
+
+  syncSheetControls();
+}
+
+function closeTabletSheet() {
+  const backdrop = document.getElementById('tabletSheetBackdrop');
+  const sheet = document.getElementById('tabletSheet');
+  if (!backdrop || !sheet) return;
+
+  sheet.classList.remove('open');
+
+  const onEnd = () => {
+    sheet.removeEventListener('transitionend', onEnd);
+    sheet.classList.remove('visible');
+    backdrop.classList.remove('visible');
+  };
+  sheet.addEventListener('transitionend', onEnd, { once: true });
+
+  // Fallback in case transitionend doesn't fire
+  setTimeout(() => {
+    sheet.classList.remove('visible');
+    backdrop.classList.remove('visible');
+  }, 400);
+}
+
+function syncSheetControls() {
+  const mainSlider = document.getElementById('intensitySlider');
+  const sheetSlider = document.getElementById('sheetIntensitySlider');
+  const sheetValue = document.getElementById('sheetIntensityValue');
+  if (mainSlider && sheetSlider) {
+    sheetSlider.value = mainSlider.value;
+  }
+  if (sheetValue && mainSlider) {
+    sheetValue.textContent = mainSlider.value + '%';
+  }
+}
+
+function setupTabletSheet() {
+  const backdrop = document.getElementById('tabletSheetBackdrop');
+  const sheet = document.getElementById('tabletSheet');
+  const handle = document.getElementById('sheetHandle');
+  const sheetSlider = document.getElementById('sheetIntensitySlider');
+  const sheetValue = document.getElementById('sheetIntensityValue');
+  const mainSlider = document.getElementById('intensitySlider');
+
+  if (!sheet) return;
+
+  // Backdrop click closes sheet
+  if (backdrop) {
+    backdrop.addEventListener('click', closeTabletSheet);
+  }
+
+  // Handle swipe down to close
+  if (handle) {
+    let touchStartY = 0;
+    handle.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    handle.addEventListener('touchend', (e) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      if (touchEndY - touchStartY > 50) {
+        closeTabletSheet();
+      }
+    }, { passive: true });
+  }
+
+  // Sheet intensity slider syncs to main
+  if (sheetSlider && mainSlider) {
+    sheetSlider.addEventListener('input', () => {
+      const value = parseInt(sheetSlider.value);
+      mainSlider.value = value;
+      mainSlider.dispatchEvent(new Event('input', { bubbles: true }));
+      if (sheetValue) sheetValue.textContent = value + '%';
+      // Also sync strip slider
+      const stripSlider = document.getElementById('stripIntensitySlider');
+      const stripValue = document.getElementById('stripIntensityValue');
+      if (stripSlider) stripSlider.value = value;
+      if (stripValue) stripValue.textContent = value + '%';
+    }, { passive: true });
+
+    sheetSlider.addEventListener('change', () => {
+      const value = parseInt(sheetSlider.value);
+      mainSlider.value = value;
+      mainSlider.dispatchEvent(new Event('change', { bubbles: true }));
+    }, { passive: true });
+  }
+
+  // Sheet intensity presets
+  sheet.querySelectorAll('.sheet-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const value = parseInt(btn.dataset.intensity);
+      if (isNaN(value)) return;
+
+      if (mainSlider) {
+        mainSlider.value = value;
+        mainSlider.dispatchEvent(new Event('input', { bubbles: true }));
+        mainSlider.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (sheetSlider) sheetSlider.value = value;
+      if (sheetValue) sheetValue.textContent = value + '%';
+
+      // Sync strip
+      const stripSlider = document.getElementById('stripIntensitySlider');
+      const stripValue = document.getElementById('stripIntensityValue');
+      if (stripSlider) stripSlider.value = value;
+      if (stripValue) stripValue.textContent = value + '%';
+
+      // Highlight active preset
+      sheet.querySelectorAll('.sheet-preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Sheet color buttons
+  sheet.querySelectorAll('.sheet-color-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const hex = btn.dataset.color;
+      if (!hex) return;
+
+      // Parse hex to RGB
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (!result) return;
+      const r = parseInt(result[1], 16);
+      const g = parseInt(result[2], 16);
+      const b_val = parseInt(result[3], 16);
+
+      // Update swatches
+      const stripSwatch = document.getElementById('stripColorSwatch');
+      if (stripSwatch) stripSwatch.style.background = hex;
+
+      // Set sliders and apply color if function exists
+      if (typeof setSlidersToColor === 'function') {
+        setSlidersToColor(r, g, b_val, 0);
+      }
+      if (typeof applyColor === 'function') {
+        applyColor();
+      }
+      if (typeof saveSelectionColor === 'function') {
+        saveSelectionColor(r, g, b_val, 0);
+      }
+
+      // Highlight active color
+      sheet.querySelectorAll('.sheet-color-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+
+// === TASK 9: TOUCH DRAG BOX-SELECT + TWO-FINGER SCROLL ===
+function setupTabletTouchSelection() {
+  if (!('ontouchstart' in window)) return;
+
+  const floorplan = document.getElementById('floorplan');
+  if (!floorplan) return;
+
+  const selectionBox = document.getElementById('selectionBox') || (() => {
+    const box = document.createElement('div');
+    box.className = 'selection-box';
+    box.id = 'selectionBox';
+    box.style.display = 'none';
+    document.body.appendChild(box);
+    return box;
+  })();
+
+  // Allow two-finger scroll while capturing one-finger
+  floorplan.style.touchAction = 'manipulation';
+
+  let touchDragging = false;
+  let touchStart = { x: 0, y: 0 };
+  let boxSelectStarted = false;
+  let aborted = false;
+
+  floorplan.addEventListener('touchstart', (e) => {
+    // If 2+ fingers, abort box select
+    if (e.touches.length >= 2) {
+      aborted = true;
+      if (boxSelectStarted) {
+        selectionBox.style.display = 'none';
+        boxSelectStarted = false;
+      }
+      return;
+    }
+
+    // Check if touch is on an interactive element - let it pass through
+    const target = e.target.closest('.fixture, .lysekrone, .universe-block, .ring-component, .lysekrone-ring, .lysekrone-type-btn, .universe-fixture-tag, .truss-label, .room-header');
+    if (target) return;
+
+    // Start potential box select with 1 finger on empty space
+    touchDragging = true;
+    boxSelectStarted = false;
+    aborted = false;
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
+
+  floorplan.addEventListener('touchmove', (e) => {
+    if (aborted || !touchDragging) return;
+
+    // If 2+ fingers appeared, abort
+    if (e.touches.length >= 2) {
+      aborted = true;
+      if (boxSelectStarted) {
+        selectionBox.style.display = 'none';
+        boxSelectStarted = false;
+      }
+      return;
+    }
+
+    const dx = e.touches[0].clientX - touchStart.x;
+    const dy = e.touches[0].clientY - touchStart.y;
+
+    // Require >10px movement to start box select
+    if (!boxSelectStarted && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+      boxSelectStarted = true;
+      // Clear existing selection unless multi-select
+      const addToSelection = typeof window.isMultiSelectMode === 'function' && window.isMultiSelectMode();
+      if (!addToSelection) clearSelection();
+      e.preventDefault();
+    }
+
+    if (boxSelectStarted) {
+      e.preventDefault();
+      const left = Math.min(e.touches[0].clientX, touchStart.x);
+      const top = Math.min(e.touches[0].clientY, touchStart.y);
+      selectionBox.style.left = left + 'px';
+      selectionBox.style.top = top + 'px';
+      selectionBox.style.width = Math.abs(dx) + 'px';
+      selectionBox.style.height = Math.abs(dy) + 'px';
+      selectionBox.style.display = 'block';
+    }
+  }, { passive: false });
+
+  const endTouchSelect = (e) => {
+    if (!touchDragging) return;
+    touchDragging = false;
+
+    if (boxSelectStarted && !aborted) {
+      selectionBox.style.display = 'none';
+      const rect = {
+        left: parseInt(selectionBox.style.left),
+        top: parseInt(selectionBox.style.top),
+        right: parseInt(selectionBox.style.left) + parseInt(selectionBox.style.width),
+        bottom: parseInt(selectionBox.style.top) + parseInt(selectionBox.style.height)
+      };
+
+      document.querySelectorAll('.fixture').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.left < rect.right && r.right > rect.left && r.top < rect.bottom && r.bottom > rect.top) {
+          const id = el.dataset.id;
+          selectedFixtures.add(id);
+          el.classList.add('selected');
+        }
+      });
+      updateControlPanel();
+    }
+
+    boxSelectStarted = false;
+    aborted = false;
+  };
+
+  floorplan.addEventListener('touchend', endTouchSelect, { passive: true });
+  floorplan.addEventListener('touchcancel', endTouchSelect, { passive: true });
+}
 </script>
 </body>
 </html>
