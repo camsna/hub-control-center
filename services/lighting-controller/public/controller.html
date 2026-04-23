@@ -2864,7 +2864,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 24px 14px 12px;
+        padding: 32px 14px 12px;
         background: var(--bg-panel);
         border-top: 1px solid var(--border);
         border-top-left-radius: 12px;
@@ -2952,11 +2952,12 @@
       .strip-handle {
         display: block !important;
         position: absolute;
-        top: 4px;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
-        padding: 2px 20px;
+        padding: 8px 40px;
         cursor: pointer;
+        z-index: 101;
       }
 
       .strip-handle-bar {
