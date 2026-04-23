@@ -11907,7 +11907,7 @@ function setupTabletTouchSelection() {
       const currentY = e.touches[0].clientY;
       const deltaY = lastTwoFingerY - currentY;
       lastTwoFingerY = currentY;
-      window.scrollBy(0, deltaY);
+      floorplan.scrollBy(0, deltaY);
       e.preventDefault();
       return;
     }
