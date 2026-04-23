@@ -5405,37 +5405,7 @@
 <div class="tablet-sheet" id="tabletSheet">
   <div class="sheet-handle" id="sheetHandle"><div class="sheet-handle-bar"></div></div>
   <div class="sheet-content">
-    <div class="sheet-section">
-      <div class="sheet-title">Intensity</div>
-      <div class="sheet-intensity-control">
-        <input type="range" class="sheet-slider" id="sheetIntensitySlider" min="0" max="100" value="0">
-        <span class="sheet-intensity-value" id="sheetIntensityValue">0%</span>
-      </div>
-      <div class="sheet-intensity-presets">
-        <button class="sheet-preset" data-intensity="0">0%</button>
-        <button class="sheet-preset" data-intensity="25">25%</button>
-        <button class="sheet-preset" data-intensity="50">50%</button>
-        <button class="sheet-preset" data-intensity="75">75%</button>
-        <button class="sheet-preset" data-intensity="100">100%</button>
-      </div>
-    </div>
-    <div class="sheet-section">
-      <div class="sheet-title">Color</div>
-      <div class="sheet-color-presets" id="sheetColorPresets">
-        <button class="sheet-color-btn" data-color="#ff6b35" style="background:#ff6b35"></button>
-        <button class="sheet-color-btn" data-color="#ffd700" style="background:#ffd700"></button>
-        <button class="sheet-color-btn" data-color="#ffffff" style="background:#ffffff"></button>
-        <button class="sheet-color-btn" data-color="#4fc3f7" style="background:#4fc3f7"></button>
-        <button class="sheet-color-btn" data-color="#e040fb" style="background:#e040fb"></button>
-        <button class="sheet-color-btn" data-color="#ff3b30" style="background:#ff3b30"></button>
-        <button class="sheet-color-btn" data-color="#34c759" style="background:#34c759"></button>
-        <button class="sheet-color-btn" data-color="#007aff" style="background:#007aff"></button>
-      </div>
-      <div class="sheet-color-picker-wrap">
-        <canvas class="sheet-color-canvas" id="sheetColorCanvas" width="300" height="120"></canvas>
-        <div class="sheet-color-marker" id="sheetColorMarker"></div>
-      </div>
-    </div>
+    <!-- Control panel will be reparented here by JS -->
   </div>
 </div>
 
@@ -11817,20 +11787,19 @@ function syncSheetControls() {
 
 function setupTabletSheet() {
   // Reparent the desktop control panel into the sheet content
-  const controlPanel = document.getElementById('controlPanel');
-  const sheetContent = document.querySelector('.sheet-content');
-  if (controlPanel && sheetContent) {
-    // Clear the duplicate sheet controls
-    sheetContent.innerHTML = '';
-    // Move the real control panel into the sheet
-    sheetContent.appendChild(controlPanel);
+  const isTablet = window.matchMedia('(max-width: 1024px)').matches;
+  if (isTablet) {
+    const controlPanel = document.getElementById('controlPanel');
+    const sheetContent = document.querySelector('.sheet-content');
+    if (controlPanel && sheetContent) {
+      sheetContent.appendChild(controlPanel);
+      controlPanel.style.display = 'block';
+    }
   }
 
   const backdrop = document.getElementById('tabletSheetBackdrop');
   const sheet = document.getElementById('tabletSheet');
   const handle = document.getElementById('sheetHandle');
-  const sheetSlider = document.getElementById('sheetIntensitySlider');
-  const sheetValue = document.getElementById('sheetIntensityValue');
   const mainSlider = document.getElementById('intensitySlider');
 
   if (!sheet) return;
