@@ -51,7 +51,7 @@
 <head>
   <meta charset="utf-8">
   <title>Jernbanetorget Lighting Controller</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <style>
     :root {
       --bg-dark: #1a1a1e;
@@ -3220,9 +3220,30 @@
         transform: translateY(100%);
         transition: transform 0.3s ease-out;
         max-height: 65vh;
-        overflow-y: auto;
+        overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
-        touch-action: none;
+        touch-action: pan-y;
+      }
+
+      /* Always-visible scrollbar */
+      .tablet-sheet::-webkit-scrollbar {
+        width: 14px;
+      }
+
+      .tablet-sheet::-webkit-scrollbar-track {
+        background: var(--bg-dark);
+        border-radius: 0 16px 0 0;
+      }
+
+      .tablet-sheet::-webkit-scrollbar-thumb {
+        background: var(--text-dim);
+        border-radius: 7px;
+        border: 3px solid var(--bg-dark);
+        min-height: 40px;
+      }
+
+      .tablet-sheet::-webkit-scrollbar-thumb:active {
+        background: var(--accent);
       }
 
       .tablet-sheet.visible {
@@ -11875,39 +11896,7 @@ function setupTabletControlStrip() {
     });
   }
 
-  // Two-finger scroll inside the sheet
-  const sheet = document.getElementById('tabletSheet');
-  if (sheet) {
-    let sheetLastY = 0;
-    let sheetTwoFinger = false;
-
-    sheet.addEventListener('touchstart', (e) => {
-      if (e.touches.length >= 2) {
-        sheetTwoFinger = true;
-        sheetLastY = e.touches[0].clientY;
-      } else {
-        sheetTwoFinger = false;
-      }
-    }, { passive: true });
-
-    sheet.addEventListener('touchmove', (e) => {
-      if (e.touches.length >= 2) {
-        if (!sheetTwoFinger) {
-          sheetTwoFinger = true;
-          sheetLastY = e.touches[0].clientY;
-        }
-        const currentY = e.touches[0].clientY;
-        const deltaY = sheetLastY - currentY;
-        sheetLastY = currentY;
-        sheet.scrollBy(0, deltaY);
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    sheet.addEventListener('touchend', () => {
-      sheetTwoFinger = false;
-    }, { passive: true });
-  }
+  // Sheet scrolling handled natively via touch-action: pan-y and overflow-y: scroll
 
   // Handle bar opens bottom sheet
   const stripHandle = document.getElementById('stripHandle');
