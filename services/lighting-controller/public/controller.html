@@ -2614,7 +2614,8 @@
     .tablet-sheet,
     .tablet-tab-bar,
     .tablet-hamburger,
-    .tablet-drawer-backdrop {
+    .tablet-drawer-backdrop,
+    .strip-handle {
       display: none;
     }
 
@@ -2947,24 +2948,31 @@
         flex-shrink: 0;
       }
 
-      .strip-expand-btn {
+      .strip-handle {
+        position: fixed;
+        bottom: 100px;
+        left: 0;
+        right: 0;
+        z-index: 100;
         display: flex;
-        align-items: center;
         justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        background: var(--accent);
-        color: white;
-        font-size: 14px;
+        padding: 6px 0 2px;
+        background: var(--bg-panel);
+        border-top: 1px solid var(--border);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
         cursor: pointer;
-        flex-shrink: 0;
-        padding: 0;
       }
 
-      .strip-expand-btn:active {
-        background: var(--accent-dim);
+      .strip-handle-bar {
+        width: 40px;
+        height: 4px;
+        background: var(--text-dim);
+        border-radius: 2px;
+      }
+
+      .strip-handle:active .strip-handle-bar {
+        background: var(--accent);
       }
 
       /* === Bottom sheet === */
@@ -5370,6 +5378,7 @@
 
 
 <!-- Tablet compact control strip (hidden on desktop) -->
+<div class="strip-handle" id="stripHandle"><div class="strip-handle-bar"></div></div>
 <div class="tablet-control-strip" id="tabletControlStrip">
   <button class="strip-clear-btn" id="stripClearBtn" aria-label="Clear selection">&times;</button>
   <span class="strip-selection" id="stripSelection">No selection</span>
@@ -5378,7 +5387,6 @@
   </div>
   <span class="strip-intensity" id="stripIntensityValue">0%</span>
   <div class="strip-color-swatch" id="stripColorSwatch"></div>
-  <button class="strip-expand-btn" id="stripExpandBtn" aria-label="Expand controls">&#9650;</button>
 </div>
 
 <!-- Tablet bottom sheet overlay (hidden by default) -->
@@ -11669,15 +11677,15 @@ function setupTabletControlStrip() {
     });
   }
 
-  // Expand button opens bottom sheet
-  const expandBtn = document.getElementById('stripExpandBtn');
-  if (expandBtn) {
-    expandBtn.addEventListener('touchend', (e) => {
+  // Handle bar opens bottom sheet
+  const stripHandle = document.getElementById('stripHandle');
+  if (stripHandle) {
+    stripHandle.addEventListener('touchend', (e) => {
       e.stopPropagation();
       e.preventDefault();
       if (typeof openTabletSheet === 'function') openTabletSheet();
     });
-    expandBtn.addEventListener('click', (e) => {
+    stripHandle.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
       if (typeof openTabletSheet === 'function') openTabletSheet();
