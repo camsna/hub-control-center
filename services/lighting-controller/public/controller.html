@@ -2675,10 +2675,18 @@
         display: none !important;
       }
 
-      /* Hide desktop tab bar */
+      /* Hide desktop tab bar - must not take grid space */
       .tab-bar {
-        display: none;
+        display: none !important;
       }
+
+      /* Explicit grid placement for tablet elements */
+      .header { grid-row: 1; }
+      .tablet-pill-bar { grid-row: 2; }
+      .main { grid-row: 3; }
+      .tablet-control-strip { grid-row: 4; }
+      .tablet-tab-bar { grid-row: 5; }
+      .footer { grid-row: 6; }
 
       /* Main content takes full width */
       .tab-content.active {
@@ -2738,11 +2746,33 @@
         flex-shrink: 0;
       }
 
-      /* Floorplan gets full width */
+      /* Floorplan gets full width, scale to fit */
       .floorplan {
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        max-width: 100vw;
+        box-sizing: border-box;
+      }
+
+      /* Scale down fixture rows to fit viewport */
+      .truss-fixtures {
+        flex-wrap: wrap;
+      }
+
+      .room-section {
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      /* Lysekrone cards stack if needed */
+      .lysekroner-row {
+        flex-wrap: wrap;
+      }
+
+      /* Universe block pills wrap */
+      .universe-block .fixture-tags {
+        flex-wrap: wrap;
       }
 
       /* Larger fixture touch targets */
