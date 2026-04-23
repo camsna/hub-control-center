@@ -3503,51 +3503,55 @@
         box-shadow: 0 0 0 2px var(--accent);
       }
 
-      .color-modal-slider-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      .color-modal-picker {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
         margin-bottom: 10px;
       }
 
-      .cml {
-        font-size: 16px;
-        font-weight: 700;
-        min-width: 20px;
-        text-align: center;
+      .color-modal-canvas {
+        width: 100%;
+        height: 160px;
+        border-radius: 8px;
+        cursor: crosshair;
+        touch-action: none;
       }
 
-      .color-modal-range {
-        flex: 1;
-        height: 10px;
-        border-radius: 5px;
+      .color-modal-marker {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border: 3px solid white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        box-shadow: 0 0 4px rgba(0,0,0,0.5);
+      }
+
+      .color-modal-hue-row {
+        margin-bottom: 8px;
+      }
+
+      .color-modal-hue {
+        width: 100%;
+        height: 14px;
+        border-radius: 7px;
         -webkit-appearance: none;
         appearance: none;
-        background: var(--bg-card);
         outline: none;
+        background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
       }
 
-      .color-modal-range::-webkit-slider-thumb {
+      .color-modal-hue::-webkit-slider-thumb {
         -webkit-appearance: none;
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
-        background: var(--accent);
+        background: white;
         cursor: pointer;
-        border: 2px solid var(--bg-panel);
+        border: 2px solid var(--border);
         box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-      }
-
-      .color-modal-range.red::-webkit-slider-thumb { background: #ff6b6b; }
-      .color-modal-range.green::-webkit-slider-thumb { background: #69db7c; }
-      .color-modal-range.blue::-webkit-slider-thumb { background: #74c0fc; }
-      .color-modal-range.white::-webkit-slider-thumb { background: #fff; border: 2px solid var(--border); }
-
-      .cmv {
-        font-size: 13px;
-        min-width: 30px;
-        text-align: right;
-        color: var(--text-dim);
       }
 
       /* === Bottom tab bar === */
@@ -5813,27 +5817,12 @@
     <button class="color-modal-close" id="colorModalClose">&times;</button>
   </div>
   <div class="color-modal-swatches" id="colorModalSwatches"></div>
-  <div class="color-modal-sliders">
-    <div class="color-modal-slider-row">
-      <span class="cml" style="color:#ff6b6b">R</span>
-      <input type="range" class="color-modal-range red" id="modalSliderR" min="0" max="255" value="255">
-      <span class="cmv" id="modalValR">255</span>
-    </div>
-    <div class="color-modal-slider-row">
-      <span class="cml" style="color:#69db7c">G</span>
-      <input type="range" class="color-modal-range green" id="modalSliderG" min="0" max="255" value="255">
-      <span class="cmv" id="modalValG">255</span>
-    </div>
-    <div class="color-modal-slider-row">
-      <span class="cml" style="color:#74c0fc">B</span>
-      <input type="range" class="color-modal-range blue" id="modalSliderB" min="0" max="255" value="255">
-      <span class="cmv" id="modalValB">255</span>
-    </div>
-    <div class="color-modal-slider-row">
-      <span class="cml" style="color:#fff">W</span>
-      <input type="range" class="color-modal-range white" id="modalSliderW" min="0" max="255" value="255">
-      <span class="cmv" id="modalValW">255</span>
-    </div>
+  <div class="color-modal-picker">
+    <canvas class="color-modal-canvas" id="colorModalCanvas" width="280" height="160"></canvas>
+    <div class="color-modal-marker" id="colorModalMarker"></div>
+  </div>
+  <div class="color-modal-hue-row">
+    <input type="range" class="color-modal-hue" id="colorModalHue" min="0" max="360" value="0">
   </div>
 </div>
 <div class="tablet-sheet" id="tabletSheet">
@@ -12137,24 +12126,6 @@ function setupTabletControlStrip() {
         swatchContainer.appendChild(s);
       });
 
-      // Sync sliders from current color
-      const rSlider = document.getElementById('sliderRed');
-      const gSlider = document.getElementById('sliderGreen');
-      const bSlider = document.getElementById('sliderBlue');
-      const wSlider = document.getElementById('sliderWhite');
-      const mr = document.getElementById('modalSliderR');
-      const mg = document.getElementById('modalSliderG');
-      const mb = document.getElementById('modalSliderB');
-      const mw = document.getElementById('modalSliderW');
-      if (rSlider && mr) mr.value = rSlider.value;
-      if (gSlider && mg) mg.value = gSlider.value;
-      if (bSlider && mb) mb.value = bSlider.value;
-      if (wSlider && mw) mw.value = wSlider.value;
-      document.getElementById('modalValR').textContent = mr ? mr.value : '0';
-      document.getElementById('modalValG').textContent = mg ? mg.value : '0';
-      document.getElementById('modalValB').textContent = mb ? mb.value : '0';
-      document.getElementById('modalValW').textContent = mw ? mw.value : '0';
-
       backdrop.classList.add('visible');
       modal.classList.add('visible');
     }
@@ -12170,16 +12141,6 @@ function setupTabletControlStrip() {
       if (typeof setSlidersToColor === 'function') setSlidersToColor(r, g, b, w);
       if (typeof applyColor === 'function') applyColor();
       if (typeof saveSelectionColor === 'function') saveSelectionColor(r, g, b, w);
-      // Update modal sliders
-      const mr = document.getElementById('modalSliderR');
-      const mg = document.getElementById('modalSliderG');
-      const mb = document.getElementById('modalSliderB');
-      const mw = document.getElementById('modalSliderW');
-      if (mr) { mr.value = r; document.getElementById('modalValR').textContent = r; }
-      if (mg) { mg.value = g; document.getElementById('modalValG').textContent = g; }
-      if (mb) { mb.value = b; document.getElementById('modalValB').textContent = b; }
-      if (mw) { mw.value = w; document.getElementById('modalValW').textContent = w; }
-      // Update strip swatch color
       swatch.style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
     }
 
@@ -12191,21 +12152,81 @@ function setupTabletControlStrip() {
     document.getElementById('colorModalClose').addEventListener('click', (e) => { e.stopPropagation(); closeColorModal(); });
     document.getElementById('colorModalBackdrop').addEventListener('click', closeColorModal);
 
-    // Modal RGBW sliders
-    ['R','G','B','W'].forEach(ch => {
-      const slider = document.getElementById('modalSlider' + ch);
-      const val = document.getElementById('modalVal' + ch);
-      if (slider) {
-        slider.addEventListener('input', () => {
-          if (val) val.textContent = slider.value;
-          const r = parseInt(document.getElementById('modalSliderR').value);
-          const g = parseInt(document.getElementById('modalSliderG').value);
-          const b = parseInt(document.getElementById('modalSliderB').value);
-          const w = parseInt(document.getElementById('modalSliderW').value);
-          applyModalColor(r, g, b, w);
-        });
+    // Color picker canvas
+    const modalCanvas = document.getElementById('colorModalCanvas');
+    const modalMarker = document.getElementById('colorModalMarker');
+    const modalHue = document.getElementById('colorModalHue');
+    let currentHue = 0;
+
+    function drawModalGradient(hue) {
+      if (!modalCanvas) return;
+      const ctx = modalCanvas.getContext('2d');
+      const w = modalCanvas.width;
+      const h = modalCanvas.height;
+
+      // Base color from hue
+      const hueColor = 'hsl(' + hue + ', 100%, 50%)';
+
+      // White to hue gradient (left to right)
+      const gradH = ctx.createLinearGradient(0, 0, w, 0);
+      gradH.addColorStop(0, '#ffffff');
+      gradH.addColorStop(1, hueColor);
+      ctx.fillStyle = gradH;
+      ctx.fillRect(0, 0, w, h);
+
+      // Transparent to black gradient (top to bottom)
+      const gradV = ctx.createLinearGradient(0, 0, 0, h);
+      gradV.addColorStop(0, 'rgba(0,0,0,0)');
+      gradV.addColorStop(1, 'rgba(0,0,0,1)');
+      ctx.fillStyle = gradV;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function pickModalColor(clientX, clientY) {
+      if (!modalCanvas) return;
+      const rect = modalCanvas.getBoundingClientRect();
+      const x = Math.max(0, Math.min(rect.width - 1, clientX - rect.left));
+      const y = Math.max(0, Math.min(rect.height - 1, clientY - rect.top));
+
+      // Position marker
+      if (modalMarker) {
+        modalMarker.style.left = x + 'px';
+        modalMarker.style.top = y + 'px';
       }
-    });
+
+      // Read pixel color
+      const ctx = modalCanvas.getContext('2d');
+      const scaleX = modalCanvas.width / rect.width;
+      const scaleY = modalCanvas.height / rect.height;
+      const pixel = ctx.getImageData(x * scaleX, y * scaleY, 1, 1).data;
+      applyModalColor(pixel[0], pixel[1], pixel[2], 0);
+    }
+
+    if (modalCanvas) {
+      modalCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); pickModalColor(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+      modalCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); pickModalColor(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+      modalCanvas.addEventListener('mousedown', (e) => {
+        pickModalColor(e.clientX, e.clientY);
+        const onMove = (ev) => pickModalColor(ev.clientX, ev.clientY);
+        const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    }
+
+    if (modalHue) {
+      modalHue.addEventListener('input', () => {
+        currentHue = parseInt(modalHue.value);
+        drawModalGradient(currentHue);
+      });
+    }
+
+    // Draw initial gradient when modal opens
+    const origOpenColor = openColorModal;
+    openColorModal = function() {
+      origOpenColor();
+      setTimeout(() => { drawModalGradient(currentHue); }, 50);
+    };
   }
 
   // Handle bar opens bottom sheet
