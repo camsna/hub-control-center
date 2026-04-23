@@ -2773,6 +2773,10 @@
         padding: 0;
         margin-right: 8px;
         flex-shrink: 0;
+      }
+
+      /* Header stays above drawer */
+      .header {
         position: relative;
         z-index: 201;
       }
@@ -11500,16 +11504,24 @@ function setupTabletDrawer() {
     if (backdrop) backdrop.classList.remove('visible');
   }
 
+  function updateHamburgerIcon() {
+    hamburger.innerHTML = sidebar.classList.contains('tablet-open') ? '&#9664;' : '&#9776;';
+  }
+
   hamburger.addEventListener('click', () => {
     if (sidebar.classList.contains('tablet-open')) {
       closeDrawer();
     } else {
       openDrawer();
     }
+    updateHamburgerIcon();
   });
 
   if (backdrop) {
-    backdrop.addEventListener('click', closeDrawer);
+    backdrop.addEventListener('click', () => {
+      closeDrawer();
+      updateHamburgerIcon();
+    });
   }
 
   // Override sidebar item clicks for multi-select (toggle behavior)
