@@ -12076,6 +12076,24 @@ function setupTabletSheet() {
       handleXYInput(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: false });
 
+    // Double-tap to snap to center
+    let lastTapTime = 0;
+    xyPad.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTapTime < 300) {
+        // Double tap — snap to center
+        e.preventDefault();
+        panSlider.value = 128;
+        tiltSlider.value = 128;
+        panSlider.dispatchEvent(new Event('input', { bubbles: true }));
+        tiltSlider.dispatchEvent(new Event('input', { bubbles: true }));
+        panSlider.dispatchEvent(new Event('change', { bubbles: true }));
+        tiltSlider.dispatchEvent(new Event('change', { bubbles: true }));
+        updateMarkerFromSliders();
+      }
+      lastTapTime = now;
+    }, { passive: false });
+
     xyPad.addEventListener('mousedown', (e) => {
       handleXYInput(e.clientX, e.clientY);
       const onMove = (ev) => handleXYInput(ev.clientX, ev.clientY);
@@ -12098,6 +12116,22 @@ function setupTabletSheet() {
     if (typeof openTabletSheet !== 'undefined') {
       openTabletSheet = window.openTabletSheet;
     }
+  }
+
+  // Double-tap relative dimmer slider to snap to 0 (center)
+  const relativeSlider = document.getElementById('relativeSlider');
+  if (relativeSlider) {
+    let lastRelTap = 0;
+    relativeSlider.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastRelTap < 300) {
+        e.preventDefault();
+        relativeSlider.value = 0;
+        relativeSlider.dispatchEvent(new Event('input', { bubbles: true }));
+        relativeSlider.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      lastRelTap = now;
+    }, { passive: false });
   }
 }
 
