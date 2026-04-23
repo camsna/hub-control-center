@@ -11705,17 +11705,19 @@ function setupTabletTouchSelection() {
   })();
 
   // Allow two-finger scroll while capturing one-finger
-  floorplan.style.touchAction = 'pan-x pan-y';
+  floorplan.style.touchAction = 'none';
 
   let touchDragging = false;
   let touchStart = { x: 0, y: 0 };
   let boxSelectStarted = false;
   let aborted = false;
+  let lastTwoFingerY = 0;
 
   floorplan.addEventListener('touchstart', (e) => {
-    // If 2+ fingers, abort box select
+    // If 2+ fingers, abort box select and prepare for two-finger scroll
     if (e.touches.length >= 2) {
       aborted = true;
+      lastTwoFingerY = e.touches[0].clientY;
       if (boxSelectStarted) {
         selectionBox.style.display = 'none';
         boxSelectStarted = false;
@@ -11735,17 +11737,25 @@ function setupTabletTouchSelection() {
   }, { passive: true });
 
   floorplan.addEventListener('touchmove', (e) => {
-    if (aborted || !touchDragging) return;
-
-    // If 2+ fingers appeared, abort
+    // Two-finger scroll: manually scroll the page since touchAction is 'none'
     if (e.touches.length >= 2) {
-      aborted = true;
-      if (boxSelectStarted) {
-        selectionBox.style.display = 'none';
-        boxSelectStarted = false;
+      if (!aborted) {
+        aborted = true;
+        lastTwoFingerY = e.touches[0].clientY;
+        if (boxSelectStarted) {
+          selectionBox.style.display = 'none';
+          boxSelectStarted = false;
+        }
       }
+      const currentY = e.touches[0].clientY;
+      const deltaY = lastTwoFingerY - currentY;
+      lastTwoFingerY = currentY;
+      window.scrollBy(0, deltaY);
+      e.preventDefault();
       return;
     }
+
+    if (aborted || !touchDragging) return;
 
     const dx = e.touches[0].clientX - touchStart.x;
     const dy = e.touches[0].clientY - touchStart.y;
