@@ -2947,6 +2947,26 @@
         flex-shrink: 0;
       }
 
+      .strip-expand-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--accent);
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        flex-shrink: 0;
+        padding: 0;
+      }
+
+      .strip-expand-btn:active {
+        background: var(--accent-dim);
+      }
+
       /* === Bottom sheet === */
       .tablet-sheet-backdrop {
         display: none;
@@ -5358,6 +5378,7 @@
   </div>
   <span class="strip-intensity" id="stripIntensityValue">0%</span>
   <div class="strip-color-swatch" id="stripColorSwatch"></div>
+  <button class="strip-expand-btn" id="stripExpandBtn" aria-label="Expand controls">&#9650;</button>
 </div>
 
 <!-- Tablet bottom sheet overlay (hidden by default) -->
@@ -11648,12 +11669,20 @@ function setupTabletControlStrip() {
     });
   }
 
-  strip.addEventListener('click', (e) => {
-    if (e.target.closest('.strip-slider-wrap') || e.target.closest('.strip-slider') || e.target.closest('.strip-clear-btn')) return;
-    if (typeof openTabletSheet === 'function') {
-      openTabletSheet();
-    }
-  });
+  // Expand button opens bottom sheet
+  const expandBtn = document.getElementById('stripExpandBtn');
+  if (expandBtn) {
+    expandBtn.addEventListener('touchend', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (typeof openTabletSheet === 'function') openTabletSheet();
+    });
+    expandBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (typeof openTabletSheet === 'function') openTabletSheet();
+    });
+  }
 
   // Expose syncTabletStrip globally
   window.syncTabletStrip = function() {
