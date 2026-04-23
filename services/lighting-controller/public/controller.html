@@ -3012,7 +3012,7 @@
         max-height: 65vh;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        touch-action: pan-y;
+        touch-action: none;
       }
 
       .tablet-sheet.visible {
@@ -11686,6 +11686,40 @@ function setupTabletControlStrip() {
       clearSelection();
       updateControlPanel();
     });
+  }
+
+  // Two-finger scroll inside the sheet
+  const sheet = document.getElementById('tabletSheet');
+  if (sheet) {
+    let sheetLastY = 0;
+    let sheetTwoFinger = false;
+
+    sheet.addEventListener('touchstart', (e) => {
+      if (e.touches.length >= 2) {
+        sheetTwoFinger = true;
+        sheetLastY = e.touches[0].clientY;
+      } else {
+        sheetTwoFinger = false;
+      }
+    }, { passive: true });
+
+    sheet.addEventListener('touchmove', (e) => {
+      if (e.touches.length >= 2) {
+        if (!sheetTwoFinger) {
+          sheetTwoFinger = true;
+          sheetLastY = e.touches[0].clientY;
+        }
+        const currentY = e.touches[0].clientY;
+        const deltaY = sheetLastY - currentY;
+        sheetLastY = currentY;
+        sheet.scrollBy(0, deltaY);
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    sheet.addEventListener('touchend', () => {
+      sheetTwoFinger = false;
+    }, { passive: true });
   }
 
   // Handle bar opens bottom sheet
