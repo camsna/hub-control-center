@@ -2752,6 +2752,12 @@
         display: block;
       }
 
+      /* Hide venue text on tablet */
+      .header-title,
+      .header-venue {
+        display: none !important;
+      }
+
       /* Hamburger button in header */
       .tablet-hamburger {
         display: flex !important;
@@ -2767,6 +2773,8 @@
         padding: 0;
         margin-right: 8px;
         flex-shrink: 0;
+        position: relative;
+        z-index: 201;
       }
 
       /* Floorplan gets full width, scale to fit */
