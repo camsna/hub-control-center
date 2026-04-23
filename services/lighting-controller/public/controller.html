@@ -8251,17 +8251,22 @@ function updateControlPanel() {
 function setupEventListeners() {
   // Note: takeoverBtn click is handled in setupTakeoverDropdown()
 
+  // Helper: on tablet touch, always add to selection (no modifier keys available)
+  function shouldAddToSelection(e) {
+    const isTouch = 'ontouchstart' in window && window.matchMedia('(max-width: 1024px)').matches;
+    return isTouch || e.shiftKey || e.ctrlKey || e.metaKey ||
+           (typeof window.isMultiSelectMode === 'function' && window.isMultiSelectMode());
+  }
+
   // Master click handler - uses event delegation
   document.addEventListener('click', (e) => {
-    // Check if multi-select mode is active (mobile)
-    const addToSelection = e.shiftKey || e.ctrlKey || e.metaKey ||
-                          (typeof window.isMultiSelectMode === 'function' && window.isMultiSelectMode());
+    // Check if multi-select mode is active (mobile/tablet)
+    const addToSelection = shouldAddToSelection(e);
 
     const fixture = e.target.closest('.fixture');
     if (fixture) {
       const id = fixture.dataset.id;
-      const isTouch = 'ontouchstart' in window && window.matchMedia('(max-width: 1024px)').matches;
-      if (addToSelection || isTouch) {
+      if (addToSelection) {
         toggleFixture(id);
       } else {
         selectFixture(id, false);
@@ -8332,7 +8337,7 @@ function setupEventListeners() {
     if (lysekroneTypeBtn) {
       const lysekrone = parseInt(lysekroneTypeBtn.dataset.lysekrone);
       const type = lysekroneTypeBtn.dataset.type;
-      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) clearSelection();
+      if (!shouldAddToSelection(e)) clearSelection();
       // Select all 3 rings' LEDs or Globes for this lysekrone
       for (let ring = 1; ring <= 3; ring++) {
         selectLysekroneComponent(lysekrone, ring, type);
@@ -8347,7 +8352,7 @@ function setupEventListeners() {
       const lysekrone = parseInt(ringComponent.dataset.lysekrone);
       const ring = parseInt(ringComponent.dataset.ring);
       const type = ringComponent.dataset.type;
-      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) clearSelection();
+      if (!shouldAddToSelection(e)) clearSelection();
       selectLysekroneComponent(lysekrone, ring, type);
       updateControlPanel();
       return;
@@ -8358,7 +8363,7 @@ function setupEventListeners() {
       e.stopPropagation();
       const lysekrone = parseInt(lysekroneRing.dataset.lysekrone);
       const ring = parseInt(lysekroneRing.dataset.ring);
-      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) clearSelection();
+      if (!shouldAddToSelection(e)) clearSelection();
       selectLysekroneRing(lysekrone, ring);
       updateControlPanel();
       return;
@@ -8376,7 +8381,7 @@ function setupEventListeners() {
 
   document.querySelectorAll('.sidebar-item[data-select-room]').forEach(el => {
     el.addEventListener('click', (e) => {
-      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) clearSelection();
+      if (!shouldAddToSelection(e)) clearSelection();
       el.classList.add('selected');
       selectByRoom(el.dataset.selectRoom);
     });
@@ -8384,7 +8389,7 @@ function setupEventListeners() {
 
   document.querySelectorAll('.sidebar-item[data-select-type]').forEach(el => {
     el.addEventListener('click', (e) => {
-      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) clearSelection();
+      if (!shouldAddToSelection(e)) clearSelection();
       el.classList.add('selected');
       selectByType(el.dataset.selectType);
     });
@@ -8417,7 +8422,7 @@ function setupEventListeners() {
   document.querySelectorAll('.sidebar-item[data-select-house]').forEach(el => {
     el.addEventListener('click', (e) => {
       const key = el.dataset.selectHouse; // e.g. "6-taklys"
-      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) clearSelection();
+      if (!shouldAddToSelection(e)) clearSelection();
       el.classList.add('selected');
       selectedHouseGroups.add(key);
       // "Stage" includes both kreios and briteq fixtures
@@ -8432,7 +8437,7 @@ function setupEventListeners() {
 
   document.querySelectorAll('.sidebar-item[data-select-lysekrone]').forEach(el => {
     el.addEventListener('click', (e) => {
-      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) clearSelection();
+      if (!shouldAddToSelection(e)) clearSelection();
       el.classList.add('selected');
       const action = el.dataset.selectLysekrone;
       if (action === 'all-led') {
