@@ -2674,8 +2674,21 @@
         display: none !important;
       }
 
-      /* Hide desktop right control panel */
+      /* Control panel: hidden from grid, will be reparented into sheet by JS */
       .control-panel {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        border: none !important;
+        background: transparent !important;
+      }
+
+      /* Hide the empty state and mobile panel header in the sheet context */
+      .control-panel .empty-state,
+      .control-panel .mobile-panel-header,
+      .control-panel .mobile-panel-close {
         display: none !important;
       }
 
@@ -2996,8 +3009,10 @@
         z-index: 999;
         transform: translateY(100%);
         transition: transform 0.3s ease-out;
-        max-height: 55vh;
+        max-height: 65vh;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
       }
 
       .tablet-sheet.visible {
@@ -11767,6 +11782,16 @@ function syncSheetControls() {
 }
 
 function setupTabletSheet() {
+  // Reparent the desktop control panel into the sheet content
+  const controlPanel = document.getElementById('controlPanel');
+  const sheetContent = document.querySelector('.sheet-content');
+  if (controlPanel && sheetContent) {
+    // Clear the duplicate sheet controls
+    sheetContent.innerHTML = '';
+    // Move the real control panel into the sheet
+    sheetContent.appendChild(controlPanel);
+  }
+
   const backdrop = document.getElementById('tabletSheetBackdrop');
   const sheet = document.getElementById('tabletSheet');
   const handle = document.getElementById('sheetHandle');
