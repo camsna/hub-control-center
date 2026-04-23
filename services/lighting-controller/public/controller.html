@@ -2612,7 +2612,9 @@
     .tablet-control-strip,
     .tablet-sheet-backdrop,
     .tablet-sheet,
-    .tablet-tab-bar {
+    .tablet-tab-bar,
+    .tablet-hamburger,
+    .tablet-drawer-backdrop {
       display: none;
     }
 
@@ -2659,7 +2661,7 @@
     @media (max-width: 1024px) {
       /* Override the app grid for tablet */
       .app {
-        grid-template-rows: 56px 36px 1fr;
+        grid-template-rows: 56px 1fr;
         padding-bottom: 100px; /* space for fixed control strip (50px) + tab bar (50px) */
       }
 
@@ -2683,11 +2685,7 @@
 
       /* Explicit grid placement for tablet elements */
       .header { grid-row: 1; }
-      .tablet-pill-bar { grid-row: 2; }
-      .main { grid-row: 3; }
-      .tablet-control-strip { grid-row: 4; }
-      .tablet-tab-bar { grid-row: 5; }
-      .footer { grid-row: 6; }
+      .main { grid-row: 2; }
 
       /* Main content takes full width */
       .tab-content.active {
@@ -2698,52 +2696,76 @@
         grid-template-columns: 1fr;
       }
 
-      /* Show tablet pill bar */
+      /* Hide pill bar on tablet — using drawer instead */
       .tablet-pill-bar {
-        display: block;
+        display: none !important;
+      }
+
+      /* Show the sidebar as a slide-in drawer */
+      .sidebar {
+        display: flex !important;
+        flex-direction: column;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        max-width: 80vw;
+        z-index: 200;
         background: var(--bg-panel);
-        border-bottom: 1px solid var(--border);
-        overflow: hidden;
-      }
-
-      .pill-scroll {
-        display: flex;
-        gap: 6px;
-        padding: 4px 12px;
-        overflow-x: auto;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease-out;
+        overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        box-shadow: none;
+        border-right: 1px solid var(--border);
       }
 
-      .pill-scroll::-webkit-scrollbar {
+      .sidebar.tablet-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+      }
+
+      /* Sidebar toggle buttons hidden — we use hamburger */
+      .sidebar-toggle,
+      .sidebar-expand-btn {
+        display: none !important;
+      }
+
+      /* Sidebar items get larger touch targets */
+      .sidebar-item {
+        min-height: 44px;
+        padding: 10px 14px !important;
+        font-size: 14px;
+      }
+
+      /* Drawer backdrop */
+      .tablet-drawer-backdrop {
         display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 199;
       }
 
-      .pill {
-        flex-shrink: 0;
-        padding: 6px 14px;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        background: var(--bg-card);
-        color: var(--text-dim);
-        font-size: 13px;
-        font-family: inherit;
+      .tablet-drawer-backdrop.visible {
+        display: block;
+      }
+
+      /* Hamburger button in header */
+      .tablet-hamburger {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: none;
+        border: none;
+        color: var(--text);
+        font-size: 22px;
         cursor: pointer;
-        min-height: 32px;
-        white-space: nowrap;
-      }
-
-      .pill.active {
-        background: var(--accent);
-        color: #111;
-        border-color: var(--accent);
-        font-weight: 600;
-      }
-
-      .pill-divider {
-        width: 1px;
-        background: var(--border);
-        margin: 4px 2px;
+        padding: 0;
+        margin-right: 8px;
         flex-shrink: 0;
       }
 
@@ -4403,6 +4425,7 @@
         </div><!-- /sidebar-section-content -->
       </div>
     </aside>
+      <div class="tablet-drawer-backdrop" id="tabletDrawerBackdrop"></div>
 
     <!-- FLOORPLAN -->
     <div class="floorplan" id="floorplan">
@@ -7073,7 +7096,7 @@ function init() {
   setupSidebarSections(); // Setup collapsible sidebar
   setupTakeoverDropdown(); // Setup room selection dropdown
   setupMobileNav();  // Setup mobile navigation
-  setupTabletPillBar();  // Tablet pill bar interaction
+  setupTabletDrawer();  // Tablet pill bar interaction
   setupTabletTabBar();  // Tablet bottom tab bar sync
   setupTabletControlStrip();  // Tablet control strip sync
   setupTabletSheet();  // Tablet bottom sheet controls
@@ -11452,56 +11475,40 @@ function setupEffectsObserver() {
 // ============================================================================
 
 // === TASK 6: PILL BAR INTERACTION ===
-function setupTabletPillBar() {
-  const pillBar = document.getElementById('tabletPillBar');
-  if (!pillBar) return;
+function setupTabletDrawer() {
+  const hamburger = document.getElementById('tabletHamburger');
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('tabletDrawerBackdrop');
+  if (!hamburger || !sidebar) return;
 
-  pillBar.addEventListener('click', (e) => {
-    const pill = e.target.closest('.pill');
-    if (!pill) return;
+  function openDrawer() {
+    sidebar.classList.add('tablet-open');
+    if (backdrop) backdrop.classList.add('visible');
+  }
 
-    // Update active pill styling
-    pillBar.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
+  function closeDrawer() {
+    sidebar.classList.remove('tablet-open');
+    if (backdrop) backdrop.classList.remove('visible');
+  }
 
-    const pillRoom = pill.dataset.pillRoom;
-    const pillGroup = pill.dataset.pillGroup;
-
-    if (pillRoom) {
-      // Room pills
-      if (pillRoom === 'all') {
-        clearSelection();
-        selectByRoom('all');
-      } else {
-        // "sal-a" -> "a", "sal-b" -> "b", "sal-c" -> "c"
-        const roomLetter = pillRoom.split('-')[1];
-        const sidebarItem = document.querySelector('.sidebar-item[data-select-room="' + roomLetter + '"]');
-        if (sidebarItem) {
-          sidebarItem.click();
-        } else {
-          clearSelection();
-          selectByRoom(roomLetter);
-        }
-      }
-    } else if (pillGroup) {
-      // Group pills - find matching sidebar item by data-select-type
-      const sidebarItem = document.querySelector('.sidebar-item[data-select-type="' + pillGroup + '"]');
-      if (sidebarItem) {
-        sidebarItem.click();
-      } else {
-        // Fallback: try matching by label text
-        const allSidebarItems = document.querySelectorAll('.sidebar-item');
-        for (const item of allSidebarItems) {
-          const label = item.querySelector('.label');
-          if (label && label.textContent.trim().toLowerCase() === pillGroup.toLowerCase()) {
-            item.click();
-            break;
-          }
-        }
-      }
+  hamburger.addEventListener('click', () => {
+    if (sidebar.classList.contains('tablet-open')) {
+      closeDrawer();
+    } else {
+      openDrawer();
     }
+  });
 
-    updateControlPanel();
+  if (backdrop) {
+    backdrop.addEventListener('click', closeDrawer);
+  }
+
+  // Override sidebar item clicks for multi-select (toggle behavior)
+  sidebar.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      // Toggle the active class on the item itself
+      item.classList.toggle('tablet-selected');
+    });
   });
 }
 
