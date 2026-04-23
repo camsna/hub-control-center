@@ -2615,7 +2615,9 @@
     .tablet-tab-bar,
     .tablet-hamburger,
     .tablet-drawer-backdrop,
-    .strip-handle {
+    .strip-handle,
+    .color-modal-backdrop,
+    .color-modal {
       display: none;
     }
 
@@ -3412,6 +3414,140 @@
         transform: translate(-50%, -50%);
         pointer-events: none;
         box-shadow: 0 0 4px rgba(0,0,0,0.5);
+      }
+
+      /* === Color picker modal === */
+      .color-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+      }
+
+      .color-modal-backdrop.visible {
+        display: block;
+      }
+
+      .color-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 320px;
+        max-width: 85vw;
+        background: var(--bg-panel);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        z-index: 1001;
+        padding: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      }
+
+      .color-modal.visible {
+        display: block;
+      }
+
+      .color-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .color-modal-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .color-modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-dim);
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .color-modal-close:active {
+        background: var(--off);
+        color: white;
+      }
+
+      .color-modal-swatches {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .color-modal-swatches .cm-swatch {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        cursor: pointer;
+      }
+
+      .color-modal-swatches .cm-swatch.active {
+        border-color: white;
+        box-shadow: 0 0 0 2px var(--accent);
+      }
+
+      .color-modal-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .cml {
+        font-size: 16px;
+        font-weight: 700;
+        min-width: 20px;
+        text-align: center;
+      }
+
+      .color-modal-range {
+        flex: 1;
+        height: 10px;
+        border-radius: 5px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--bg-card);
+        outline: none;
+      }
+
+      .color-modal-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--accent);
+        cursor: pointer;
+        border: 2px solid var(--bg-panel);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      }
+
+      .color-modal-range.red::-webkit-slider-thumb { background: #ff6b6b; }
+      .color-modal-range.green::-webkit-slider-thumb { background: #69db7c; }
+      .color-modal-range.blue::-webkit-slider-thumb { background: #74c0fc; }
+      .color-modal-range.white::-webkit-slider-thumb { background: #fff; border: 2px solid var(--border); }
+
+      .cmv {
+        font-size: 13px;
+        min-width: 30px;
+        text-align: right;
+        color: var(--text-dim);
       }
 
       /* === Bottom tab bar === */
@@ -5668,6 +5804,38 @@
 
 <!-- Tablet bottom sheet overlay (hidden by default) -->
 <div class="tablet-sheet-backdrop" id="tabletSheetBackdrop"></div>
+
+<!-- Color picker modal (triggered by swatch in control strip) -->
+<div class="color-modal-backdrop" id="colorModalBackdrop"></div>
+<div class="color-modal" id="colorModal">
+  <div class="color-modal-header">
+    <span class="color-modal-title">Color</span>
+    <button class="color-modal-close" id="colorModalClose">&times;</button>
+  </div>
+  <div class="color-modal-swatches" id="colorModalSwatches"></div>
+  <div class="color-modal-sliders">
+    <div class="color-modal-slider-row">
+      <span class="cml" style="color:#ff6b6b">R</span>
+      <input type="range" class="color-modal-range red" id="modalSliderR" min="0" max="255" value="255">
+      <span class="cmv" id="modalValR">255</span>
+    </div>
+    <div class="color-modal-slider-row">
+      <span class="cml" style="color:#69db7c">G</span>
+      <input type="range" class="color-modal-range green" id="modalSliderG" min="0" max="255" value="255">
+      <span class="cmv" id="modalValG">255</span>
+    </div>
+    <div class="color-modal-slider-row">
+      <span class="cml" style="color:#74c0fc">B</span>
+      <input type="range" class="color-modal-range blue" id="modalSliderB" min="0" max="255" value="255">
+      <span class="cmv" id="modalValB">255</span>
+    </div>
+    <div class="color-modal-slider-row">
+      <span class="cml" style="color:#fff">W</span>
+      <input type="range" class="color-modal-range white" id="modalSliderW" min="0" max="255" value="255">
+      <span class="cmv" id="modalValW">255</span>
+    </div>
+  </div>
+</div>
 <div class="tablet-sheet" id="tabletSheet">
   <div class="sheet-handle" id="sheetHandle"><div class="sheet-handle-bar"></div><button class="sheet-close-btn" id="sheetCloseBtn" aria-label="Close">&times;</button></div>
   <div class="sheet-content">
@@ -11925,6 +12093,120 @@ function setupTabletControlStrip() {
   }
 
   // Sheet scrolling handled natively via touch-action: pan-y and overflow-y: scroll
+
+  // Swatch opens color modal
+  const swatch = document.getElementById('stripColorSwatch');
+  if (swatch) {
+    const colorPresets = [
+      { hex: '#ffffff', r: 255, g: 255, b: 255, w: 255, title: 'White' },
+      { hex: '#ffcc66', r: 255, g: 180, b: 60, w: 128, title: 'Warm' },
+      { hex: '#ff6b6b', r: 255, g: 0, b: 0, w: 0, title: 'Red' },
+      { hex: '#ffd43b', r: 255, g: 200, b: 0, w: 0, title: 'Amber' },
+      { hex: '#69db7c', r: 0, g: 255, b: 0, w: 0, title: 'Green' },
+      { hex: '#74c0fc', r: 0, g: 180, b: 255, w: 0, title: 'Cyan' },
+      { hex: '#5c7cfa', r: 0, g: 0, b: 255, w: 0, title: 'Blue' },
+      { hex: '#da77f2', r: 200, g: 0, b: 255, w: 0, title: 'Magenta' }
+    ];
+
+    function openColorModal() {
+      const modal = document.getElementById('colorModal');
+      const backdrop = document.getElementById('colorModalBackdrop');
+      const swatchContainer = document.getElementById('colorModalSwatches');
+      if (!modal || !backdrop) return;
+
+      // Populate swatches
+      swatchContainer.innerHTML = '';
+      colorPresets.forEach(p => {
+        const s = document.createElement('div');
+        s.className = 'cm-swatch';
+        s.style.background = p.hex;
+        if (p.hex === '#ffffff') s.style.border = '2px solid var(--border)';
+        s.addEventListener('touchend', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          applyModalColor(p.r, p.g, p.b, p.w);
+          swatchContainer.querySelectorAll('.cm-swatch').forEach(x => x.classList.remove('active'));
+          s.classList.add('active');
+        });
+        s.addEventListener('click', (e) => {
+          e.stopPropagation();
+          applyModalColor(p.r, p.g, p.b, p.w);
+          swatchContainer.querySelectorAll('.cm-swatch').forEach(x => x.classList.remove('active'));
+          s.classList.add('active');
+        });
+        swatchContainer.appendChild(s);
+      });
+
+      // Sync sliders from current color
+      const rSlider = document.getElementById('sliderRed');
+      const gSlider = document.getElementById('sliderGreen');
+      const bSlider = document.getElementById('sliderBlue');
+      const wSlider = document.getElementById('sliderWhite');
+      const mr = document.getElementById('modalSliderR');
+      const mg = document.getElementById('modalSliderG');
+      const mb = document.getElementById('modalSliderB');
+      const mw = document.getElementById('modalSliderW');
+      if (rSlider && mr) mr.value = rSlider.value;
+      if (gSlider && mg) mg.value = gSlider.value;
+      if (bSlider && mb) mb.value = bSlider.value;
+      if (wSlider && mw) mw.value = wSlider.value;
+      document.getElementById('modalValR').textContent = mr ? mr.value : '0';
+      document.getElementById('modalValG').textContent = mg ? mg.value : '0';
+      document.getElementById('modalValB').textContent = mb ? mb.value : '0';
+      document.getElementById('modalValW').textContent = mw ? mw.value : '0';
+
+      backdrop.classList.add('visible');
+      modal.classList.add('visible');
+    }
+
+    function closeColorModal() {
+      const modal = document.getElementById('colorModal');
+      const backdrop = document.getElementById('colorModalBackdrop');
+      if (modal) modal.classList.remove('visible');
+      if (backdrop) backdrop.classList.remove('visible');
+    }
+
+    function applyModalColor(r, g, b, w) {
+      if (typeof setSlidersToColor === 'function') setSlidersToColor(r, g, b, w);
+      if (typeof applyColor === 'function') applyColor();
+      if (typeof saveSelectionColor === 'function') saveSelectionColor(r, g, b, w);
+      // Update modal sliders
+      const mr = document.getElementById('modalSliderR');
+      const mg = document.getElementById('modalSliderG');
+      const mb = document.getElementById('modalSliderB');
+      const mw = document.getElementById('modalSliderW');
+      if (mr) { mr.value = r; document.getElementById('modalValR').textContent = r; }
+      if (mg) { mg.value = g; document.getElementById('modalValG').textContent = g; }
+      if (mb) { mb.value = b; document.getElementById('modalValB').textContent = b; }
+      if (mw) { mw.value = w; document.getElementById('modalValW').textContent = w; }
+      // Update strip swatch color
+      swatch.style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+
+    swatch.addEventListener('touchend', (e) => { e.stopPropagation(); e.preventDefault(); openColorModal(); });
+    swatch.addEventListener('click', (e) => { e.stopPropagation(); openColorModal(); });
+
+    // Close handlers
+    document.getElementById('colorModalClose').addEventListener('touchend', (e) => { e.stopPropagation(); e.preventDefault(); closeColorModal(); });
+    document.getElementById('colorModalClose').addEventListener('click', (e) => { e.stopPropagation(); closeColorModal(); });
+    document.getElementById('colorModalBackdrop').addEventListener('click', closeColorModal);
+
+    // Modal RGBW sliders
+    ['R','G','B','W'].forEach(ch => {
+      const slider = document.getElementById('modalSlider' + ch);
+      const val = document.getElementById('modalVal' + ch);
+      if (slider) {
+        slider.addEventListener('input', () => {
+          if (val) val.textContent = slider.value;
+          const r = parseInt(document.getElementById('modalSliderR').value);
+          const g = parseInt(document.getElementById('modalSliderG').value);
+          const b = parseInt(document.getElementById('modalSliderB').value);
+          const w = parseInt(document.getElementById('modalSliderW').value);
+          applyModalColor(r, g, b, w);
+        });
+      }
+    });
+  }
 
   // Handle bar opens bottom sheet
   const stripHandle = document.getElementById('stripHandle');
